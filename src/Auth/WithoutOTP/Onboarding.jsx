@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   User,
   Lock,
   Eye,
@@ -21,10 +20,9 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- GET URL FROM ENV ---
-const API_URL = import.meta.env.VITE_API_URL + "/auth";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/auth";
 
-const Toast = ({ message, type, isVisible, onClose }) => (
+const Toast = ({ message, type, isVisible }) => (
   <AnimatePresence>
     {isVisible && (
       <motion.div
@@ -69,12 +67,11 @@ export default function RegisterDoctor() {
     password: "",
   });
 
-  const [otp, setOtp] = useState(["", "", "", ""]);
   const [toast, setToast] = useState({ show: false, msg: "", type: "success" });
 
   const showToast = (msg, type) => {
     setToast({ show: true, msg, type });
-    setTimeout(() => setToast({ ...toast, show: false }), 3000);
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
   };
 
   const handleChange = (e) =>
@@ -88,31 +85,20 @@ export default function RegisterDoctor() {
         return;
       }
       setStep(2);
-    } else if (step === 2) {
-      if (!formData.clinicName || !formData.password) {
-        showToast("Please fill in all clinic details.", "error");
-        return;
-      }
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        setStep(3);
-        showToast("OTP Sent", "success");
-      }, 1000);
     }
   };
 
-  const handleVerify = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (otp.join("").length !== 4) {
-      showToast("Invalid OTP", "error");
+    if (!formData.clinicName || !formData.password || !formData.location) {
+      showToast("Please fill in all clinic and password details.", "error");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/register-doctor`, {
+      const response = await fetch(`${API_URL}/auth/register-doctor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -122,13 +108,10 @@ export default function RegisterDoctor() {
 
       if (response.ok) {
         showToast("Partner Account Created Successfully!", "success");
-
-        // Auto-Login
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("role", "doctor");
-
-        setTimeout(() => navigate("/doctor-dashboard"), 2000);
+        setTimeout(() => navigate(`/doctor/dashboard/${data.user.id}`), 2000);
       } else {
         showToast(data.message || "Registration Failed", "error");
         setIsLoading(false);
@@ -140,19 +123,12 @@ export default function RegisterDoctor() {
     }
   };
 
-  const handleOtpChange = (element, index) => {
-    if (isNaN(element.value)) return;
-    setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
-    if (element.nextSibling && element.value) element.nextSibling.focus();
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans flex items-center justify-center p-4 pt-24 md:pt-32 relative overflow-hidden">
       <Toast
         message={toast.msg}
         type={toast.type}
         isVisible={toast.show}
-        onClose={() => setToast({ ...toast, show: false })}
       />
 
       <div className="flex w-full max-w-3xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 relative z-10">
@@ -162,7 +138,7 @@ export default function RegisterDoctor() {
               Doctor Registration
             </h2>
             <div className="flex items-center justify-center gap-2 mt-6">
-              {[1, 2, 3].map((i) => (
+              {[1, 2].map((i) => (
                 <div
                   key={i}
                   className={`h-2 rounded-full transition-all duration-500 ${
@@ -270,12 +246,11 @@ export default function RegisterDoctor() {
                     name="licenseNumber"
                     required
                     className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Medical License Number (NMC)"
+                    placeholder="Medical License Number"
                     value={formData.licenseNumber}
                     onChange={handleChange}
                   />
                 </div>
-                <div id="recaptcha-container"></div>
                 <button
                   type="submit"
                   className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-lg text-white shadow-lg shadow-blue-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2 mt-6"
@@ -291,7 +266,7 @@ export default function RegisterDoctor() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                onSubmit={handleNext}
+                onSubmit={handleRegister}
                 className="space-y-4"
               >
                 <div className="relative group">
@@ -322,21 +297,21 @@ export default function RegisterDoctor() {
                     onChange={handleChange}
                   />
                 </div>
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Clock size={20} />
-                  </div>
-                  <input
-                    type="text"
-                    name="timing"
-                    required
-                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Timing (e.g. 10 AM - 9 PM)"
-                    value={formData.timing}
-                    onChange={handleChange}
-                  />
-                </div>
                 <div className="grid md:grid-cols-2 gap-4">
+                   <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Clock size={20} />
+                    </div>
+                    <input
+                      type="text"
+                      name="timing"
+                      required
+                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Timing"
+                      value={formData.timing}
+                      onChange={handleChange}
+                    />
+                  </div>
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                       <IndianRupee size={20} />
@@ -351,27 +326,27 @@ export default function RegisterDoctor() {
                       onChange={handleChange}
                     />
                   </div>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                      <Lock size={20} />
-                    </div>
-                    <input
-                      type="showPassword"
-                      name="password"
-                      required
-                      className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-12 outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Set Password"
-                      value={formData.password}
-                      onChange={handleChange}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600"
-                    >
-                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                    </button>
+                </div>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                    <Lock size={20} />
                   </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    required
+                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-12 outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Set Password"
+                    value={formData.password}
+                    onChange={handleChange}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
                 <div className="flex gap-4 mt-6">
                   <button
@@ -386,60 +361,16 @@ export default function RegisterDoctor() {
                     disabled={isLoading}
                     className="flex-1 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-lg text-white shadow-lg shadow-blue-500/30 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
                   >
-                    {isLoading ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      <>
-                        Get Verified <ArrowRight size={20} />
-                      </>
-                    )}
+                    {isLoading ? <Loader2 className="animate-spin" /> : "Complete Registration"}
                   </button>
                 </div>
               </motion.form>
-            )}
-
-            {step === 3 && (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-6 text-center"
-              >
-                <div className="flex justify-center gap-4 my-6">
-                  {otp.map((data, index) => (
-                    <input
-                      key={index}
-                      type="text"
-                      maxLength="1"
-                      className="w-14 h-14 border-2 border-slate-200 rounded-xl text-center text-2xl font-bold text-blue-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition-all bg-white"
-                      value={data}
-                      onChange={(e) => handleOtpChange(e.target, index)}
-                      onFocus={(e) => e.target.select()}
-                    />
-                  ))}
-                </div>
-                <button
-                  onClick={handleVerify}
-                  disabled={isLoading}
-                  className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 font-bold text-lg text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
-                    <Loader2 size={24} className="animate-spin" />
-                  ) : (
-                    "Verify & Launch Clinic"
-                  )}
-                </button>
-              </motion.div>
             )}
           </AnimatePresence>
 
           <div className="mt-8 text-center text-sm text-slate-500">
             Already have a partner account?{" "}
-            <Link
-              to="/login"
-              className="font-bold text-blue-600 hover:text-blue-500 hover:underline"
-            >
+            <Link to="/login" className="font-bold text-blue-600 hover:text-blue-500 hover:underline">
               Partner Login
             </Link>
           </div>

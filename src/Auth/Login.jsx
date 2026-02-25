@@ -15,8 +15,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 // Access ENV variable (Vite uses import.meta.env, CRA uses process.env)
-const API_URL = import.meta.env.VITE_API_URL;
-
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const Toast = ({ message, type, isVisible, onClose }) => (
   <AnimatePresence>
     {isVisible && (
@@ -46,9 +45,10 @@ export default function Login() {
   const [formData, setFormData] = useState({ identifier: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
+  
   const navigate = useNavigate();
   const [toast, setToast] = useState({ show: false, msg: "", type: "success" });
+  console.log("API URL:", API_URL); // Debugging line to check if the variable is accessible
 
   const showToast = (msg, type) => {
     setToast({ show: true, msg, type });
@@ -64,10 +64,11 @@ export default function Login() {
 
     setIsLoading(true);
 
-    try {
-      console.log("Sending to:", `${API_URL}/login`); // Debug URL
+    try { 
+      const finalURL = `${API_URL}/auth/login`;
+      console.log("Login URL:", finalURL); // Debugging line to check the final URL
 
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(finalURL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

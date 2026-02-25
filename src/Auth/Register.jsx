@@ -23,8 +23,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- GET URL FROM ENV ---
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/auth";
+const API_URL = import.meta.env.VITE_API_URL + "/auth";
 
 const Toast = ({ message, type, isVisible, onClose }) => (
   <AnimatePresence>

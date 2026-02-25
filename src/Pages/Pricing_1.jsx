@@ -70,7 +70,7 @@ export default function Pricing() {
                <motion.div 
                  layout 
                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                 className={`w-6 h-6 bg-teal-500 rounded-full shadow-md ₹{billingCycle === 'yearly' ? 'ml-8' : 'ml-0'}`}
+                 className={`w-6 h-6 bg-teal-500 rounded-full shadow-md ${billingCycle === 'yearly' ? 'ml-8' : 'ml-0'}`}
                />
              </button>
              <span className={`text-sm font-bold ₹{billingCycle === 'yearly' ? 'text-slate-900' : 'text-slate-500'}`}>Yearly</span>
