@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 
 import {
   Stethoscope,
@@ -31,7 +31,24 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 // 1. Sidebar
 const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
-     const { doctorId } = useParams();
+  const { doctorId } = useParams();
+    const navigate = useNavigate();
+  // Add this function:
+  const handleLogout = (e) => {
+    e.preventDefault(); // Prevent any default button behavior
+
+    
+    try {
+      // Clear storage
+      localStorage.removeItem("token"); 
+      localStorage.removeItem("doctorInfo"); 
+
+      // Navigate
+      navigate("/login");
+    } catch (error) {
+      console.error("❌ Error during logout:", error);
+    }
+  };
   const links = [
     {
       name: "Dashboard",
@@ -85,7 +102,7 @@ const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
           ))}
         </nav>
         <div className="p-4 border-t border-slate-800">
-          <button className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-800 rounded-xl w-full transition-colors cursor-pointer">
+          <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-800 rounded-xl w-full transition-colors cursor-pointer">
             <LogOut size={20} />
             <span>Logout</span>
           </button>
@@ -160,7 +177,22 @@ export default function DoctorDashboard() {
 
     fetchAppointments();
   }, []);
+  const getStatusClasses = (status) => {
+    // Convert to lowercase to ensure matching works regardless of casing
+    const currentStatus = (status || "confirmed").toLowerCase();
 
+    switch (currentStatus) {
+      case "cancelled":
+        return "bg-red-100 text-red-700"; // Red
+      case "completed":
+        return "bg-green-100 text-green-700"; // Green
+      case "consulting":
+        return "bg-amber-100 text-amber-700"; // Yellow/Orange
+      case "confirmed":
+      default:
+        return "bg-blue-100 text-blue-700"; // Light Blue
+    }
+  };
   // --- DATA PROCESSING & STATS CALCULATION ---
   const {
     todayCount,
@@ -201,7 +233,7 @@ export default function DoctorDashboard() {
         mRev += fee;
       }
 
-      if (isToday && app.status === "confirmed") {
+      if (isToday) {
         tCount++;
         tRev += fee;
         tSched.push(app);
@@ -281,8 +313,6 @@ export default function DoctorDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
-
-
             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold border-2 border-white shadow-sm">
               Dr
             </div>
@@ -321,12 +351,6 @@ export default function DoctorDashboard() {
                   <h3 className="font-bold text-slate-800 text-lg">
                     Today's Schedule
                   </h3>
-                  <a
-                    href="/doctor/schedule"
-                    className="text-blue-600 text-sm font-bold hover:underline"
-                  >
-                    View All
-                  </a>
                 </div>
 
                 {todaySchedule.length === 0 ? (
@@ -338,14 +362,18 @@ export default function DoctorDashboard() {
                     {todaySchedule.map((item) => (
                       <div
                         key={item._id}
-                        className="flex gap-4 items-start relative p-4 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors"
+                        className="flex gap-2 items-start relative p-3 border border-slate-100 rounded-xl hover:bg-slate-50 transition-colors"
                       >
                         <div className="absolute -left-px top-4 bottom-4 w-1 rounded-r-lg bg-blue-500"></div>
                         <div className="flex-1">
                           <div className="text-sm font-bold text-slate-500 mb-1">
-                            {new Date(item.appointmentDate).toLocaleTimeString(
-                              [],
-                              { hour: "2-digit", minute: "2-digit" },
+                            {new Date(item.appointmentDate).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
                             )}
                           </div>
                           <div className="font-bold text-slate-800 text-lg">
@@ -357,6 +385,11 @@ export default function DoctorDashboard() {
                             </span>
                             <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
                               {item.doctorType || "Consultation"}
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded font-medium ${getStatusClasses(item.status)}`}
+                            >
+                              {item.status || "Confirmed"}
                             </span>
                           </div>
                         </div>
@@ -425,9 +458,6 @@ export default function DoctorDashboard() {
                               <td className="px-6 py-4 text-sm text-slate-600">
                                 <div className="font-semibold">
                                   {formattedDate}
-                                </div>
-                                <div className="text-xs text-slate-400">
-                                  {formattedTime}
                                 </div>
                               </td>
                               <td className="px-6 py-4">

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Stethoscope,
@@ -16,12 +15,29 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 const API_URL = import.meta.env.VITE_API_URL;
 // --- COMPONENTS ---
 
 const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
   const { doctorId } = useParams();
+  const navigate = useNavigate();
+  // Add this function:
+  const handleLogout = (e) => {
+    e.preventDefault(); // Prevent any default button behavior
+
+    
+    try {
+      // Clear storage
+      localStorage.removeItem("token"); 
+      localStorage.removeItem("doctorInfo"); 
+
+      // Navigate
+      navigate("/login");
+    } catch (error) {
+      console.error("❌ Error during logout:", error);
+    }
+  };
   const links = [
     {
       name: "Dashboard",
@@ -75,7 +91,7 @@ const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
           ))}
         </nav>
         <div className="p-4 border-t border-slate-800">
-          <button className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-800 rounded-xl w-full transition-colors cursor-pointer">
+          <button  onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-800 rounded-xl w-full transition-colors cursor-pointer">
             <LogOut size={20} />
             <span>Logout</span>
           </button>
@@ -104,7 +120,7 @@ export default function LiveDesk() {
     if (!doctorId) return;
     try {
       const response = await fetch(
-        `${API_URL}/appointment-history/todays-appoi-Hist/${doctorId}`
+        `${API_URL}/appointment-history/todays-appoi-Hist/${doctorId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -120,9 +136,13 @@ export default function LiveDesk() {
   }, [doctorId]);
 
   // Derived State
-  const activePatient = queue.find((p) => ["consulting", "in_progress", "ongoing"].includes(p.status?.toLowerCase()));
+  const activePatient = queue.find((p) =>
+    ["consulting", "in_progress", "ongoing"].includes(p.status?.toLowerCase()),
+  );
   const waitingList = queue
-    .filter((p) => ["confirmed", "scheduled", "pending"].includes(p.status?.toLowerCase()))
+    .filter((p) =>
+      ["confirmed", "scheduled", "pending"].includes(p.status?.toLowerCase()),
+    )
     .sort((a, b) => a.tokenNumber - b.tokenNumber);
   const completedList = queue
     .filter((p) => p.status?.toLowerCase() === "completed")
@@ -139,43 +159,48 @@ export default function LiveDesk() {
 
     const previousQueue = [...queue];
 
-    setQueue((prev) => prev.map((p) => 
-      p._id === firstWaiting._id ? { ...p, status: "consulting" } : p
-    ));
+    setQueue((prev) =>
+      prev.map((p) =>
+        p._id === firstWaiting._id ? { ...p, status: "consulting" } : p,
+      ),
+    );
 
     try {
-      const response = await fetch(`${API_URL}/appointment/start-first-appointment/${doctorId}`, {
-        method: "PUT", 
-        headers: { "Content-Type": "application/json" }
-      });
-      
+      const response = await fetch(
+        `${API_URL}/appointment/start-first-appointment/${doctorId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
       if (!response.ok) throw new Error("Failed to start appointment");
 
       setTimeout(() => {
-        fetchQueue(); 
-      }, 500); 
-
+        fetchQueue();
+      }, 500);
     } catch (error) {
       console.error("Error starting consultation:", error);
-      setQueue(previousQueue); 
+      setQueue(previousQueue);
     }
   };
 
-  
   const handleComplete = async (appointmentId) => {
     const previousQueue = [...queue];
 
     // OPTIMISTIC UI UPDATE
-    setQueue((prev) => prev.map((p) => 
-      p._id === appointmentId ? { ...p, status: "completed" } : p
-    ));
+    setQueue((prev) =>
+      prev.map((p) =>
+        p._id === appointmentId ? { ...p, status: "completed" } : p,
+      ),
+    );
 
     try {
       const response = await fetch(
         `${API_URL}/appointment/completed-appointment/${appointmentId}`,
-        { method: "PUT", headers: { "Content-Type": "application/json" } }
+        { method: "PUT", headers: { "Content-Type": "application/json" } },
       );
-      
+
       if (!response.ok) throw new Error("Failed to complete appointment");
 
       setTimeout(() => {
@@ -195,16 +220,20 @@ export default function LiveDesk() {
     const previousQueue = [...queue];
 
     // OPTIMISTIC UI UPDATE
-    setQueue((prev) => prev.map((p) => {
-      if (activePatient && p._id === activePatient._id) return { ...p, status: "completed" };
-      if (nextWaiting && p._id === nextWaiting._id) return { ...p, status: "consulting" };
-      return p;
-    }));
+    setQueue((prev) =>
+      prev.map((p) => {
+        if (activePatient && p._id === activePatient._id)
+          return { ...p, status: "completed" };
+        if (nextWaiting && p._id === nextWaiting._id)
+          return { ...p, status: "consulting" };
+        return p;
+      }),
+    );
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/appointment/call-next-appointment/${doctorId}`,
-        { method: "PUT", headers: { "Content-Type": "application/json" } }
+        `${API_URL}/appointment/call-next-appointment/${doctorId}`,
+        { method: "PUT", headers: { "Content-Type": "application/json" } },
       );
 
       if (!response.ok) throw new Error("Failed to call next appointment");
@@ -406,8 +435,8 @@ export default function LiveDesk() {
                       >
                         {/* If patients have been completed today, we don't ask to "start day" again */}
                         <h2 className="text-3xl font-extrabold text-slate-800 mb-2">
-                          {completedList.length === 0 
-                            ? "Ready to start your day?" 
+                          {completedList.length === 0
+                            ? "Ready to start your day?"
                             : "Ready for the next patient?"}
                         </h2>
                         <p className="text-slate-500 mb-8 max-w-sm mx-auto text-lg">
@@ -422,8 +451,10 @@ export default function LiveDesk() {
                           onClick={handleStartConsulting}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-full font-bold flex items-center gap-3 transition-all shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-1 text-xl mx-auto"
                         >
-                          <Play size={24} fill="currentColor" /> 
-                          {completedList.length === 0 ? "Start Consulting" : "Call Next Patient"}
+                          <Play size={24} fill="currentColor" />
+                          {completedList.length === 0
+                            ? "Start Consulting"
+                            : "Call Next Patient"}
                         </button>
 
                         <div className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 font-medium bg-white px-4 py-2 rounded-lg border border-slate-200">
@@ -552,11 +583,12 @@ export default function LiveDesk() {
                             </h4>
                             <p className="text-[10px] text-slate-400">
                               Completed at{" "}
-                              {patient.appointmentDate && new Date(
-                                patient.appointmentDate
-                              ).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
+                              {new Date(
+                                patient.appointmentDate,
+                              ).toLocaleDateString("en-IN", {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
                               })}
                             </p>
                           </div>
