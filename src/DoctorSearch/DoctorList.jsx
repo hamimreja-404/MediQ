@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const API_URL = import.meta.env.VITE_API_URL ;
 // Common Image for all doctors (Fallback if API doesn't provide one)
 const COMMON_DOC_IMG =
-  "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2340&auto=format&fit=crop";
+  "https://plus.unsplash.com/premium_vector-1728572090276-1fcf27ce399d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZG9jdG9yfGVufDB8fDB8fHww";
 
 export default function DoctorsList() {
   const navigate = useNavigate();
@@ -92,8 +92,7 @@ export default function DoctorsList() {
 
   // -- HANDLERS --
   const handleCardClick = (id) => {
-    // Navigate to details page where you can fetch individual details using:
-    // http://localhost:5000/api/doctor/doctors/${id}
+
     navigate(`/doctor/${id}`);
   };
 

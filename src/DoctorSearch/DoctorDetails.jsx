@@ -157,7 +157,7 @@ dates.push({
               <div className="relative group">
                 <div className="w-32 h-32 rounded-2xl bg-slate-100 overflow-hidden border-4 border-white shadow-lg relative z-10">
                   <img
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(doctor.name)}&background=0D9488&color=fff&size=256`}
+                    src={`https://plus.unsplash.com/premium_vector-1728572090276-1fcf27ce399d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZG9jdG9yfGVufDB8fDB8fHww`}
                     alt={doctor.name}
                     className="w-full h-full object-cover"
                   />
