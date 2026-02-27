@@ -181,7 +181,7 @@ export default function Features() {
       {/* --- CTA --- */}
       <section className="py-24 bg-white">
           <div className="container mx-auto px-4 text-center">
-              <div className="max-w-3xl mx-auto bg-gradient-to-r from-teal-500 to-blue-600 rounded-[2rem] p-12 text-white shadow-2xl shadow-teal-500/20">
+              <div className="max-w-3xl mx-auto bg-linear-to-r from-teal-500 to-blue-600 rounded-4xl p-12 text-white shadow-2xl shadow-teal-500/20">
                   <h2 className="text-3xl md:text-5xl font-bold mb-8">Start your free trial today.</h2>
                   <button className="bg-white text-teal-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-lg hover:scale-105 transition-all">
                      <Link to="/pricing" >Get Started</Link>
