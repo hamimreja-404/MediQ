@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams,useNavigate , Link} from "react-router-dom";
 
 import {
   Stethoscope,
@@ -60,11 +60,7 @@ const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
       icon: <Activity size={20} />,
       path: "/doctor/live-desk",
     },
-    {
-      name: "Settings",
-      icon: <Settings size={20} />,
-      path: "/doctor/settings",
-    },
+
   ];
 
   return (
@@ -91,14 +87,14 @@ const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
         </div>
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {links.map((link) => (
-            <a
+            <Link
               key={link.name}
-              href={`${link.path}/${doctorId}`}
+              to={`${link.path}/${doctorId}`}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${active === link.name ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
             >
               {link.icon}
               <span>{link.name}</span>
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="p-4 border-t border-slate-800">
