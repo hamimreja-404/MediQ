@@ -16,7 +16,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+const API_URL = import.meta.env.VITE_API_URL ;
 // Common Image for all doctors (Fallback if API doesn't provide one)
 const COMMON_DOC_IMG =
   "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2340&auto=format&fit=crop";
@@ -39,7 +39,7 @@ export default function DoctorsList() {
       try {
         console.log("Fetching doctors from API...");  
         setIsLoading(true);
-        const response = await fetch("http://localhost:5000/api/doctor/doctors");
+        const response = await fetch(`${API_URL}/doctor/doctors`);
         console.log("Fetching doctors ");  
         
         if (!response.ok) {
