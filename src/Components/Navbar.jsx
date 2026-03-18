@@ -1,6 +1,6 @@
 // src/Components/Navbar.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link,useNavigate, useLocation } from 'react-router-dom';
 import { Search, Menu, X, Stethoscope } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,7 +8,9 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const [query, setQuery] = useState("");
 
+const navigate = useNavigate();
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -16,12 +18,18 @@ export default function Navbar() {
   }, []);
 
   const isActive = (path) => location.pathname === path;
-  
+    const handleSubmit = (e) => {
+    e.preventDefault(); // prevent page reload
+
+    if (query.trim() !== "") {
+      navigate(`/doctors?q=${query}`);
+    }
+  };
   // Light Mode Colors: Active = Teal-600, Inactive = Slate-600
-  const linkClass = (path) => `transition-colors ${isActive(path) ? 'text-teal-600 font-bold' : 'hover:text-teal-600 text-slate-600'}`;
+  const linkClass = (path) => `transition-colors ${isActive(path) ? 'text-teal-600 font-bold' : 'hover:text-teal-600 text-slate-900'}`;
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-md py-3' : 'bg-transparent py-5'}`}>
+    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? ' backdrop-blur-md shadow-md py-3' : 'bg-transparent py-5'}`}>
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
         
         {/* Logo */}
@@ -29,23 +37,27 @@ export default function Navbar() {
           <div className="bg-teal-500 text-white p-1.5 rounded-lg shadow-lg group-hover:rotate-12 transition-transform">
             <Stethoscope size={24} />
           </div>
-          <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-blue-600">
+          <span className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-teal-600 to-blue-600">
             MediQ
           </span>
         </Link>
 
         {/* Desktop Search */}
-        <div className="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-2 border border-slate-200 focus-within:ring-2 ring-teal-500 w-1/3 transition-all">
+        <div className="hidden md:flex items-center  rounded-full px-4 py-2 border border-slate-200 focus-within:ring-2 ring-teal-500 w-1/3 transition-all">
           <Search size={18} className="text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Search doctors..." 
-            className="bg-transparent border-none outline-none text-sm ml-2 w-full text-slate-700 placeholder:text-slate-400"
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Search doctors..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="bg-transparent border-none outline-none text-sm ml-2 w-full text-slate-100 placeholder:text-slate-400"
           />
+          </form>
         </div>
 
         {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium">
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium ">
           <Link to="/" className={linkClass('/')}>Home</Link>
           <Link to="/features" className={linkClass('/features')}>Features</Link>
           <Link to="/pricing" className={linkClass('/pricing')}>Pricing</Link>

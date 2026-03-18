@@ -230,12 +230,12 @@ export default function About() {
                 {/* Immersive Background */}
                 <div className="absolute inset-0 w-full h-full z-0">
                     <img 
-                        src="https://images.unsplash.com/photo-1495658013006-a2069f54d3d7?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZG9jdG9yJTIwd2FpdGluZyUyMHJvb218ZW58MHx8MHx8fDA%3D" 
+                        src="https://st3.depositphotos.com/8843414/17022/v/1600/depositphotos_170223652-stock-illustration-abstract-health-care-design-innovative.jpg" 
                         alt="Medical Tech" 
-                        className="w-full h-full object-cover object-top scale-105 animate-[pulse_20s_ease-in-out_infinite_alternate]"
+                        className="w-full h-full object-cover object-top scale-105 animate-[pulse_20s_ease-in-out_infinite_alternate] brightness-75"
                     />
-                    <div className="absolute inset-0 bg-slate-900/80 mix-blend-multiply"></div>
-                    <div className="absolute inset-0 bg-linear-to-t from-[#F8FAFC] via-[#F8FAFC]/10 to-transparent"></div>
+                     <div className="absolute inset-0 bg-slate-600/80 mix-blend-multiply"></div>
+                     <div className="absolute inset-0 bg-linear-to-t from-bg-slate-100/80 via-bg-slate-400/10 to-transparent"></div>
                 </div>
 
                 <div className="container mx-auto px-6 relative z-10 text-center max-w-4xl">
@@ -254,7 +254,7 @@ export default function About() {
                             </span> of healthcare.
                         </motion.h1>
                         
-                        <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-300 leading-relaxed max-w-2xl mx-auto font-light">
+                        <motion.p variants={fadeUp} className="text-lg md:text-xl text-slate-900 leading-relaxed max-w-2xl mx-auto font-light">
                             MediQ was born from a simple belief: No one should have to wait hours for a 10-minute consultation. We are intelligently bridging the gap between doctors and patients.
                         </motion.p>
                     </motion.div>
