@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation,useNavigate  } from "react-router-dom";
 import {
   Stethoscope,
   CalendarCheck,
@@ -21,7 +21,7 @@ export default function HomePage() {
   const [totalDoctor, setTotalDoctor] = useState(0);
   const [totalPatient, setTotalPatient] = useState(0);
   const [error, setError] = useState("");
-
+  const navigate = useNavigate();
   // Hardcoded English Data for the Manual Section
   const steps_patient = [
     {
@@ -145,7 +145,7 @@ export default function HomePage() {
               className="flex flex-col sm:flex-row items-center gap-4"
             >
               <Link
-                to="/doctors"
+                to={"/doctors?demo=true"}
                 className="w-full sm:w-auto group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-teal-500 text-white rounded-2xl font-bold shadow-[0_0_40px_-10px_rgba(20,184,166,0.5)] transition-all hover:bg-teal-400 hover:scale-105 hover:shadow-[0_0_60px_-15px_rgba(20,184,166,0.7)] overflow-hidden"
               >
                 <span className="relative z-10">Try Live Demo</span>

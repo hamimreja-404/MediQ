@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   MapPin,
   Clock,
@@ -15,7 +15,7 @@ import {
   Check,
 } from "lucide-react";
 import { motion } from "framer-motion";
-
+import toast, { Toaster } from "react-hot-toast";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function DoctorDetails() {
@@ -29,7 +29,8 @@ export default function DoctorDetails() {
   // Date Selection State
   const [availableDates, setAvailableDates] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
-
+  const location = useLocation();
+  const isDemo = new URLSearchParams(location.search).get("demo") === "true";
   // Helper to generate next 3 days
   const generateNext3Days = () => {
     const dates = [];
@@ -82,7 +83,14 @@ dates.push({
 
     fetchDoctor();
   }, [id]);
+  useEffect(() => {
+    if (isDemo) {
+      setTimeout(() => {
+        toast(" Step 2: Click on Book Now");
+      }, 3000);
 
+    }
+  }, [isDemo]);
   const handleBookAppointment = () => {
     if (!doctor || !selectedDate) return;
     const params = new URLSearchParams({
@@ -91,9 +99,10 @@ dates.push({
       date: selectedDate,
       location: doctor.location,
     });
-    navigate(
-      `/book-appointment?${params.toString()}`,
-    );
+    if (isDemo) {
+  params.append("demo", "true");
+}
+    {isDemo ? navigate(`/book-appointment?${params.toString()}`): navigate(`/book-appointment?${params.toString()}`)}
   };
 
   if (loading) {
@@ -132,6 +141,16 @@ dates.push({
   return (
     <div className="min-h-screen bg-slate-50 pb-20 font-sans">
       {/* Dynamic Background Header */}
+            {isDemo && (
+              <div className="fixed bottom-6 right-6 bg-white shadow-xl border border-slate-200 rounded-xl p-4 z-50 w-72">
+                <h4 className="font-bold text-sm mb-2">Demo Guide</h4>
+                <ul className="text-xs text-slate-600 space-y-1">
+                  <li>Click on Book Now</li>
+                </ul>
+              </div>
+            )}
+      
+            <Toaster position="top-right" />
       <div className="h-72 bg-linear-to-br from-teal-500 via-teal-600 to-sky-700 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <svg

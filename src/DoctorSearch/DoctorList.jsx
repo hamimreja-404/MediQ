@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
   MapPin,
@@ -13,10 +13,12 @@ import {
   ArrowRight,
   Star,
   Loader2,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-const API_URL = import.meta.env.VITE_API_URL ;
+
+import toast, { Toaster } from "react-hot-toast";
+const API_URL = import.meta.env.VITE_API_URL;
 // Common Image for all doctors (Fallback if API doesn't provide one)
 const COMMON_DOC_IMG =
   "https://plus.unsplash.com/premium_vector-1728572090276-1fcf27ce399d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZG9jdG9yfGVufDB8fDB8fHww";
@@ -33,15 +35,17 @@ export default function DoctorsList() {
   const [selectedSpec, setSelectedSpec] = useState("All");
   const [sortBy, setSortBy] = useState("default"); // default | fees_low | fees_high | exp_high
 
+  const location = useLocation();
+  const isDemo = new URLSearchParams(location.search).get("demo") === "true";
   // -- FETCH DATA --
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        console.log("Fetching doctors from API...");  
+        console.log("Fetching doctors from API...");
         setIsLoading(true);
         const response = await fetch(`${API_URL}/doctor/doctors`);
-        console.log("Fetching doctors ");  
-        
+        console.log("Fetching doctors ");
+
         if (!response.ok) {
           console.error("Failed to fetch doctors:", response.statusText);
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -50,14 +54,18 @@ export default function DoctorsList() {
         const data = await response.json();
         // Handle different possible API response structures
         // If data is array use it, otherwise check for data.doctors or data.data
-        const doctorList = Array.isArray(data) ? data : (data.doctors || data.data || []);
-        
+        const doctorList = Array.isArray(data)
+          ? data
+          : data.doctors || data.data || [];
+
         setDoctors(doctorList);
         setError(null);
       } catch (err) {
         console.log("Fetch error caught in catch block");
         console.error("Error fetching doctors:", err);
-        setError("Failed to load doctors. Please ensure the backend is running.");
+        setError(
+          "Failed to load doctors. Please ensure the backend is running.",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -69,31 +77,44 @@ export default function DoctorsList() {
   // -- FILTERING LOGIC --
   const uniqueSpecializations = useMemo(() => {
     if (!doctors.length) return ["All"];
-    return ["All", ...new Set(doctors.map((d) => d.specialization).filter(Boolean))];
+    return [
+      "All",
+      ...new Set(doctors.map((d) => d.specialization).filter(Boolean)),
+    ];
   }, [doctors]);
 
   const filteredDoctors = useMemo(() => {
-    return doctors.filter((doc) => {
-      const nameMatch = doc.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-      const clinicMatch = doc.clinicName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-      const locationMatch = doc.location?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false;
-      
-      const matchesSearch = nameMatch || clinicMatch || locationMatch;
-      const matchesSpec = selectedSpec === "All" || doc.specialization === selectedSpec;
-      
-      return matchesSearch && matchesSpec;
-    }).sort((a, b) => {
-      if (sortBy === "fees_low") return (a.fees || 0) - (b.fees || 0);
-      if (sortBy === "fees_high") return (b.fees || 0) - (a.fees || 0);
-      if (sortBy === "exp_high") return (b.experience || 0) - (a.experience || 0);
-      return 0;
-    });
+    return doctors
+      .filter((doc) => {
+        const nameMatch =
+          doc.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+          false;
+        const clinicMatch =
+          doc.clinicName?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+          false;
+        const locationMatch =
+          doc.location?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+          false;
+
+        const matchesSearch = nameMatch || clinicMatch || locationMatch;
+        const matchesSpec =
+          selectedSpec === "All" || doc.specialization === selectedSpec;
+
+        return matchesSearch && matchesSpec;
+      })
+      .sort((a, b) => {
+        if (sortBy === "fees_low") return (a.fees || 0) - (b.fees || 0);
+        if (sortBy === "fees_high") return (b.fees || 0) - (a.fees || 0);
+        if (sortBy === "exp_high")
+          return (b.experience || 0) - (a.experience || 0);
+        return 0;
+      });
   }, [doctors, searchTerm, selectedSpec, sortBy]);
 
   // -- HANDLERS --
   const handleCardClick = (id) => {
+    {isDemo ? navigate(`/doctor/${id}?demo=true`): navigate(`/doctor/${id}`)}
 
-    navigate(`/doctor/${id}`);
   };
 
   if (error) {
@@ -102,7 +123,7 @@ export default function DoctorsList() {
         <AlertCircle size={48} className="text-red-500 mb-4" />
         <h2 className="text-2xl font-bold mb-2">Connection Error</h2>
         <p className="text-slate-600 mb-6 text-center max-w-md">{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition-colors"
         >
@@ -112,8 +133,28 @@ export default function DoctorsList() {
     );
   }
 
+  useEffect(() => {
+    if (isDemo) {
+      toast.success("Demo Mode Activated");
+
+      setTimeout(() => {
+        toast(" Step 1: Click any doctor card");
+      }, 3000);
+
+    }
+  }, [isDemo]);
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-teal-500 selection:text-white">
+      {isDemo && (
+        <div className="fixed bottom-6 right-6 bg-white shadow-xl border border-slate-200 rounded-xl p-4 z-50 w-72">
+          <h4 className="font-bold text-sm mb-2">Demo Guide</h4>
+          <ul className="text-xs text-slate-600 space-y-1">
+            <li>Click any doctor</li>
+          </ul>
+        </div>
+      )}
+
+      <Toaster position="top-right" />
       {/* --- HEADER SECTION --- */}
       <section className="pt-32 pb-12 px-4 bg-white border-b border-slate-200">
         <div className="container mx-auto max-w-6xl">
@@ -206,13 +247,12 @@ export default function DoctorsList() {
       {/* --- DOCTORS LIST --- */}
       <section className="py-16 px-4">
         <div className="container mx-auto max-w-6xl">
-          
           {isLoading ? (
-             // Loading State
-             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                <Loader2 size={40} className="animate-spin mb-4 text-teal-500" />
-                <p>Finding the best doctors for you...</p>
-             </div>
+            // Loading State
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+              <Loader2 size={40} className="animate-spin mb-4 text-teal-500" />
+              <p>Finding the best doctors for you...</p>
+            </div>
           ) : (
             <>
               <div className="mb-6 text-slate-500 font-medium">
@@ -235,9 +275,11 @@ export default function DoctorsList() {
                       {/* Image Section */}
                       <div className="sm:w-48 h-48 sm:h-auto bg-slate-100 relative shrink-0">
                         <img
-                          src={doc.image || COMMON_DOC_IMG} 
+                          src={doc.image || COMMON_DOC_IMG}
                           alt={doc.fullName}
-                          onError={(e) => { e.target.src = COMMON_DOC_IMG; }}
+                          onError={(e) => {
+                            e.target.src = COMMON_DOC_IMG;
+                          }}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-slate-700 flex items-center gap-1 shadow-sm">
@@ -272,7 +314,10 @@ export default function DoctorsList() {
                           </div>
 
                           <div className="text-sm text-slate-500 mb-4 flex items-center gap-2">
-                            <GraduationCap size={16} className="text-slate-400" />
+                            <GraduationCap
+                              size={16}
+                              className="text-slate-400"
+                            />
                             <span>
                               {doc.degree} - {doc.college}
                             </span>
@@ -295,7 +340,10 @@ export default function DoctorsList() {
                             </div>
                             <div className="flex items-center gap-3 text-sm text-slate-600">
                               <div className="w-8 flex justify-center">
-                                <Stethoscope size={16} className="text-slate-400" />
+                                <Stethoscope
+                                  size={16}
+                                  className="text-slate-400"
+                                />
                               </div>
                               <span>{doc.experience} Years Experience</span>
                             </div>

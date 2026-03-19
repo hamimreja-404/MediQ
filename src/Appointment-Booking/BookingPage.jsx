@@ -18,7 +18,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 // --- Configuration ---
 const API_URL = import.meta.env.VITE_API_URL;
 const OTP_DEFAULT = "8989";
@@ -76,6 +77,8 @@ export default function BookAppointmentV2() {
     notes: "",
   });
   const navigate = useNavigate();
+    const location = useLocation();
+    const isDemo = new URLSearchParams(location.search).get("demo") === "true";
   // --- Effects ---
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -94,7 +97,15 @@ export default function BookAppointmentV2() {
       });
     }
   }, []);
+  console.log(isDemo)
+  useEffect(() => {
+    if (isDemo) {
+      setTimeout(() => {
+        toast(" Step 3: Add dummy details and book appointment");
+      }, 3000);
 
+    }
+  }, [isDemo]);
   // --- Handlers ---
 
   const handleMobileSubmit = async () => {
@@ -272,7 +283,8 @@ export default function BookAppointmentV2() {
       setStep("success");
       setLoading(false);
       setTimeout(() => {
-        navigate(`/patient/dashboard/${userId}`);
+        {isDemo ? navigate(`/patient/dashboard/${userId}?demo=true`) :navigate(`/patient/dashboard/${userId}`)}
+        
       }, 2500);
     } catch (err) {
       console.error("Booking error:", err);
@@ -309,7 +321,17 @@ export default function BookAppointmentV2() {
   return (
     <div className="min-h-screen font-sans text-slate-900 pb-20 pt-18">
       {renderHeader()}
+      {isDemo && (
+        <div className="fixed bottom-6 right-6 bg-white shadow-xl border border-slate-200 rounded-xl p-4 z-50 w-72">
+          <h4 className="font-bold text-sm mb-2">Demo Guide</h4>
+          <ul className="text-xs text-slate-600 space-y-1">
+            <li>Add dummy details and book appointment</li>
+            <li>Dummy OTP: 8989 </li>
+          </ul>
+        </div>
+      )}
 
+      <Toaster position="top-right" />
       <div className="max-w-md mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           {/* STEP 1: MOBILE NUMBER */}
