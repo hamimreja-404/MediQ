@@ -141,14 +141,20 @@ dates.push({
   return (
     <div className="min-h-screen bg-slate-50 pb-20 font-sans">
       {/* Dynamic Background Header */}
-            {isDemo && (
-              <div className="fixed bottom-6 right-6 bg-white shadow-xl border border-slate-200 rounded-xl p-4 z-50 w-72">
-                <h4 className="font-bold text-sm mb-2">Demo Guide</h4>
-                <ul className="text-xs text-slate-600 space-y-1">
-                  <li>Click on Book Now</li>
-                </ul>
-              </div>
-            )}
+{isDemo && (
+  <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-teal-100 rounded-2xl p-4 z-50 w-56 animate-in slide-in-from-bottom-5">
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-base">🖱️</span>
+      <h4 className="font-black text-slate-900 text-xs tracking-wide uppercase">
+        Demo Guide
+      </h4>
+    </div>
+    
+    <p className="text-xs text-slate-600 font-medium leading-relaxed">
+      Click the <span className="bg-slate-900 text-white px-2 py-0.5 rounded shadow-sm text-[10px] font-bold tracking-wide uppercase mx-1">Book Now</span> button to start the patient journey.
+    </p>
+  </div>
+)}
       
             <Toaster position="top-right" />
       <div className="h-72 bg-linear-to-br from-teal-500 via-teal-600 to-sky-700 relative overflow-hidden">

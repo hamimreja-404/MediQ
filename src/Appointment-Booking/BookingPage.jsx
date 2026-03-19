@@ -321,15 +321,30 @@ export default function BookAppointmentV2() {
   return (
     <div className="min-h-screen font-sans text-slate-900 pb-20 pt-18">
       {renderHeader()}
-      {isDemo && (
-        <div className="fixed bottom-6 right-6 bg-white shadow-xl border border-slate-200 rounded-xl p-4 z-50 w-72">
-          <h4 className="font-bold text-sm mb-2">Demo Guide</h4>
-          <ul className="text-xs text-slate-600 space-y-1">
-            <li>Add dummy details and book appointment</li>
-            <li>Dummy OTP: 8989 </li>
-          </ul>
-        </div>
-      )}
+{isDemo && (
+  <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-teal-100 rounded-2xl p-4 z-50 w-56">
+    <div className="flex items-center gap-2 mb-3">
+      <span className="text-base"></span>
+      <h4 className="font-black text-slate-900 text-xs tracking-wide uppercase">
+        Demo Guide
+      </h4>
+    </div>
+    
+    <ul className="text-xs text-slate-600 space-y-2.5 font-medium">
+      <li className="flex gap-2 items-start">
+        <span className="text-teal-500 text-sm leading-none">•</span>
+        <span>Book an appointment using <strong className="text-slate-900">dummy details</strong>.</span>
+      </li>
+      <li className="flex gap-2 items-center">
+        <span className="text-teal-500 text-sm leading-none">•</span>
+        <span>Test OTP:</span>
+        <span className="bg-slate-900 text-teal-400 px-2 py-0.5 rounded font-mono font-bold tracking-widest text-[10px]">
+          8989
+        </span>
+      </li>
+    </ul>
+  </div>
+)}
 
       <Toaster position="top-right" />
       <div className="max-w-md mx-auto px-4 py-8">

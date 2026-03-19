@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { useParams,useNavigate , Link} from "react-router-dom";
+import { useParams,useNavigate , Link, useLocation} from "react-router-dom";
 
 import {
   Stethoscope,
@@ -20,6 +20,7 @@ import {
   Filter,
   Menu,
   Activity,
+  Briefcase
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -53,7 +54,7 @@ const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
     {
       name: "Dashboard",
       icon: <LayoutDashboard size={20} />,
-      path: "/doctor/dashboard",
+      path: "/doctor/dashboard?demo=true",
     },
     {
       name: "Live Desk",
@@ -89,7 +90,7 @@ const Sidebar = ({ active, isMobileOpen, closeMobile }) => {
           {links.map((link) => (
             <Link
               key={link.name}
-              to={`${link.path}/${doctorId}`}
+              to={`${link.path}/${doctorId}?demo=true`}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all cursor-pointer ${active === link.name ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-bold" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`}
             >
               {link.icon}
@@ -145,7 +146,8 @@ export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+const location = useLocation();
+const isDemo = new URLSearchParams(location.search).get("demo") === "true";
   // Fetch Data from API
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -294,7 +296,49 @@ export default function DoctorDashboard() {
         isMobileOpen={isMobileMenuOpen}
         closeMobile={() => setIsMobileMenuOpen(false)}
       />
+{isDemo && (
+  <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-teal-100 rounded-3xl p-6 z-50 w-80">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-8 h-8 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center shadow-sm">
+        <Briefcase size={18} />
+      </div>
+      <h4 className="font-black text-slate-900 text-xs tracking-widest uppercase">
+        Recruiter Quick Tour
+      </h4>
+    </div>
 
+    <p className="text-xs text-slate-500 mb-5 leading-relaxed font-medium">
+      Welcome! To experience the full-stack capabilities of this application, try these steps:
+    </p>
+
+    <ul className="text-xs text-slate-600 space-y-4 font-medium">
+      <li className="flex gap-3 items-start">
+        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+          1
+        </span>
+        <span>
+          <strong className="text-slate-900">Split Screen:</strong> Keep both the Doctor and Patient windows visible side-by-side.
+        </span>
+      </li>
+      <li className="flex gap-3 items-start">
+        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+          2
+        </span>
+        <span>
+          <strong className="text-slate-900">Live Desk:</strong> Navigate to the Live Desk tab and start calling patients from the queue.
+        </span>
+      </li>
+      <li className="flex gap-3 items-start border-t border-slate-50 pt-3 mt-2">
+        <span className="bg-teal-50 text-teal-600 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold animate-pulse">
+          3
+        </span>
+        <span>
+          <strong className="text-teal-600">The Magic:</strong> Watch the patient's wait time and token progress update instantly via WebSockets!
+        </span>
+      </li>
+    </ul>
+  </div>
+)}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-20 sticky top-0">

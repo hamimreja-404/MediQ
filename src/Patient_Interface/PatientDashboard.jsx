@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client"; // 👉 Added socket.io-client
@@ -17,19 +16,21 @@ import {
   Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams } from "react-router-dom";
-
+import { useParams, useLocation } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function PatientDashboardV2() {
   const { patientId } = useParams();
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentToken, setCurrentToken] = useState(1);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-
+  const [showDemoPopup, setShowDemoPopup] = useState(false);
+  const [hasSeenDemo, setHasSeenDemo] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     mobile: "",
@@ -51,7 +52,7 @@ export default function PatientDashboardV2() {
     "language",
     "specialtyInterest",
   ];
-
+  const isDemo = new URLSearchParams(location.search).get("demo") === "true";
   const calculateCompleteness = (userData) => {
     if (!userData) return 0;
     const completedFields = profileFields.filter(
@@ -64,11 +65,11 @@ export default function PatientDashboardV2() {
   const calculateWaitTime = (myToken, liveToken) => {
     if (myToken < liveToken) return "Turn Passed";
     if (myToken === liveToken) return "It's your turn! 🚨";
-    
+
     const tokensAhead = myToken - liveToken;
     const avgMinsPerPatient = 15; // Set the average consultation time here
     const totalWaitMins = tokensAhead * avgMinsPerPatient;
-    
+
     if (totalWaitMins >= 60) {
       const hours = Math.floor(totalWaitMins / 60);
       const mins = totalWaitMins % 60;
@@ -94,7 +95,9 @@ export default function PatientDashboardV2() {
         fullName: userData.fullName || "",
         mobile: userData.mobile || "",
         email: userData.email || "",
-        dob: userData.dob ? new Date(userData.dob).toISOString().split("T")[0] : "",
+        dob: userData.dob
+          ? new Date(userData.dob).toISOString().split("T")[0]
+          : "",
         gender: userData.gender || "",
         location: userData.location || "",
         language: userData.language || "",
@@ -132,7 +135,8 @@ export default function PatientDashboardV2() {
   };
 
   const handleCancelAppointment = async (appointmentId) => {
-    if (!window.confirm("Are you sure you want to cancel this appointment?")) return;
+    if (!window.confirm("Are you sure you want to cancel this appointment?"))
+      return;
     try {
       const token = localStorage.getItem("token");
       const res = await axios.put(
@@ -164,7 +168,11 @@ export default function PatientDashboardV2() {
   const historyAppointments = appointments.filter((app) => {
     const appDate = new Date(app.appointmentDate);
     appDate.setHours(0, 0, 0, 0);
-    return app.status === "cancelled" || appDate.getTime() < today.getTime() || app.status === "completed";
+    return (
+      app.status === "cancelled" ||
+      appDate.getTime() < today.getTime() ||
+      app.status === "completed"
+    );
   });
 
   // 👉 NEW: Socket.io Connection & Listening
@@ -180,10 +188,9 @@ export default function PatientDashboardV2() {
       // Join the doctor's room for the first upcoming appointment
       const firstUpcoming = upcomingAppointments[0];
       const doctorId = firstUpcoming.doctorId._id || firstUpcoming.doctorId;
-      
+
       socket.emit("join_doctor_room", doctorId);
     });
-
     // Listen for queue updates
     socket.on("queue_updated", (data) => {
       console.log("Live queue update received:", data);
@@ -193,16 +200,22 @@ export default function PatientDashboardV2() {
     return () => {
       socket.disconnect();
     };
-  }, [upcomingAppointments.length]); 
+  }, [upcomingAppointments.length]);
 
-
+  useEffect(() => {
+    if (isDemo && upcomingAppointments.length > 0 && !hasSeenDemo) {
+      toast("Ready to open Doctor Dashboard...");
+      setShowDemoPopup(true);
+      setHasSeenDemo(true);
+    }
+  }, [isDemo, hasSeenDemo, upcomingAppointments]);
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-screen font-bold text-slate-600">
         Loading your health records...
       </div>
     );
-    
+
   if (!user)
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -214,6 +227,108 @@ export default function PatientDashboardV2() {
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-12">
+      {showDemoPopup && (
+        <div className="fixed inset-0 z-999 flex items-center justify-center p-4">
+          <Toaster position="top-right" />
+
+          {/* Background Blur */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+          {/* Popup */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative bg-white rounded-3xl p-8 w-[90%] max-w-md text-center shadow-2xl"
+          >
+            {/* Icon */}
+            <div className="w-16 h-16 mx-auto mb-4 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center">
+              <CalendarDays size={28} />
+            </div>
+
+            {/* Text */}
+            <h2 className="text-xl font-black text-slate-900 mb-2">
+              Demo Mode Active
+            </h2>
+
+            <p className="text-slate-500 text-sm mb-8">
+              Click below to open the{" "}
+              <span className="font-bold text-teal-600">Doctor Dashboard</span>{" "}
+              in a new window so you can watch the live queue sync in real-time.
+            </p>
+
+            {/* 👉 NEW: The button that satisfies browser popup rules */}
+            <button
+              onClick={() => {
+                const doctorId =
+                  upcomingAppointments[0]?.doctorId?._id ||
+                  upcomingAppointments[0]?.doctorId;
+
+                // 1. Open the new tab (Browser allows this because it's an onClick!)
+                window.open(
+                  `/doctor/dashboard/${doctorId}?demo=true`,
+                  "_blank",
+                );
+
+                // 2. Hide this popup on the Patient side
+                setShowDemoPopup(false);
+              }}
+              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+            >
+              Open Doctor Window
+            </button>
+
+            <button
+              onClick={() => setShowDemoPopup(false)}
+              className="w-full mt-3 py-3 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        </div>
+      )}
+{isDemo && (
+  <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-teal-100 rounded-3xl p-6 z-50 w-80">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-8 h-8 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center shadow-sm">
+        <span className="text-lg">📱</span>
+      </div>
+      <h4 className="font-black text-slate-900 text-xs tracking-widest uppercase">
+        Patient Experience
+      </h4>
+    </div>
+
+    <p className="text-xs text-slate-500 mb-5 leading-relaxed font-medium">
+      This is the receiving end of the WebSockets connection. Watch how this screen reacts:
+    </p>
+
+    <ul className="text-xs text-slate-600 space-y-4 font-medium">
+      <li className="flex gap-3 items-start">
+        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+          1
+        </span>
+        <span>
+          <strong className="text-slate-900">Live Token Sync:</strong> When the Doctor calls the next patient, watch the token progress bar fill up instantly.
+        </span>
+      </li>
+      <li className="flex gap-3 items-start">
+        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+          2
+        </span>
+        <span>
+          <strong className="text-slate-900">Dynamic Wait Time:</strong> See the estimated wait time recalculate automatically as the queue moves.
+        </span>
+      </li>
+      <li className="flex gap-3 items-start">
+        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+          3
+        </span>
+        <span>
+          <strong className="text-slate-900">All-in-One Hub:</strong> Patients can view appointment details, history, and update their profile strength.
+        </span>
+      </li>
+    </ul>
+  </div>
+)}
       <div className="max-w-7xl mx-auto px-6 pt-16">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -286,7 +401,9 @@ export default function PatientDashboardV2() {
                               Date
                             </p>
                             <p className="font-bold text-slate-900">
-                              {new Date(upcoming.appointmentDate).toLocaleDateString("en-GB")}
+                              {new Date(
+                                upcoming.appointmentDate,
+                              ).toLocaleDateString("en-GB")}
                             </p>
                           </div>
                           {/* 👉 UPDATED: Using dynamic calculateWaitTime */}
@@ -294,8 +411,13 @@ export default function PatientDashboardV2() {
                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
                               Live Wait Time
                             </p>
-                            <p className={`font-bold ${upcoming.tokenNumber === currentToken ? 'text-rose-600 animate-pulse' : 'text-teal-600'}`}>
-                              {calculateWaitTime(upcoming.tokenNumber, currentToken)}
+                            <p
+                              className={`font-bold ${upcoming.tokenNumber === currentToken ? "text-rose-600 animate-pulse" : "text-teal-600"}`}
+                            >
+                              {calculateWaitTime(
+                                upcoming.tokenNumber,
+                                currentToken,
+                              )}
                             </p>
                           </div>
                         </div>
@@ -656,7 +778,8 @@ export default function PatientDashboardV2() {
                   >
                     {isUpdating ? (
                       <>
-                        <Loader2 className="animate-spin" size={20} /> Updating...
+                        <Loader2 className="animate-spin" size={20} />{" "}
+                        Updating...
                       </>
                     ) : (
                       <>Save Changes</>
