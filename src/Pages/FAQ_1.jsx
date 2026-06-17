@@ -1,8 +1,18 @@
+/**
+ * FAQ_1.jsx — MediQ Help Center
+ * Zocdoc-Clean v2:
+ *  - Flat white hero, inline search bar (no glow / blur ring)
+ *  - Tab toggle: flat sliding white-pill on slate-100 track
+ *  - Accordion: border-b rows inside flat white rounded-lg container
+ *  - Active question: text-[#1A6BCC], chevron rotates 180°
+ *  - No-results state: uniform slate-100 icon container
+ *  - CTA: flat white panel, primary button + ghost link
+ */
+
 import React, { useState } from "react";
 import {
   Search,
   ChevronDown,
-  ChevronUp,
   MessageCircle,
   Mail,
   Phone,
@@ -10,28 +20,74 @@ import {
   FileQuestion,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router-dom";
 
-// --- FAQ ITEM COMPONENT ---
-const AccordionItem = ({ q, a, isOpen, onClick }) => {
+/* ─── Data ────────────────────────────────────────────── */
+const QUESTIONS = {
+  patients: [
+    {
+      q: "Is there a fee to book an appointment?",
+      a: "Yes, there is a nominal platform fee of ₹5 per booking. This secures your slot and helps us maintain server infrastructure.",
+    },
+    {
+      q: "How does the Live Queue work?",
+      a: "Once you book, you receive a Token Number (e.g., #12). On the appointment day, open the app to see the 'Current Serving Token'. If the doctor is on #8, you know you still have time before leaving home.",
+    },
+    {
+      q: "Can I cancel my appointment?",
+      a: "Yes — up to 1 hour before the scheduled time. The ₹5 platform fee is non-refundable.",
+    },
+    {
+      q: "Do I need to download an app?",
+      a: "No! MediQ works perfectly in your phone browser (Chrome, Safari). Downloading the app gives you better push notifications.",
+    },
+    {
+      q: "Where can I see my prescription?",
+      a: "After your visit, the doctor uploads your prescription. Find it in 'My Records' on your dashboard — downloadable as PDF.",
+    },
+  ],
+  doctors: [
+    {
+      q: "What are the subscription charges?",
+      a: "Three tiers: Starter (₹499/mo), Professional (₹999/mo), and Multi-Clinic (₹4,999/mo). Start free and upgrade when ready.",
+    },
+    {
+      q: "Do I need special hardware?",
+      a: "No. The MediQ dashboard runs on any laptop, tablet, or smartphone. A reliable internet connection is recommended for real-time queue sync.",
+    },
+    {
+      q: "Can I manage walk-in patients?",
+      a: "Absolutely. The Walk-In Manager lets you add patients who arrive directly. They get a token number and are automatically slotted into the queue.",
+    },
+    {
+      q: "Is patient data secure?",
+      a: "Yes — 256-bit encryption, healthcare data standards compliant. Your patient data is yours; we never sell or share it.",
+    },
+  ],
+};
+
+/* ─── Accordion Item ─────────────────────────────────── */
+function AccordionItem({ q, a, isOpen, onClick }) {
   return (
-    <motion.div
-      initial={false}
-      className="border-b border-slate-200 overflow-hidden"
-    >
+    <div className="border-b border-gray-100 last:border-0">
       <button
         onClick={onClick}
-        className="w-full py-5 flex items-center justify-between text-left focus:outline-none group"
+        className="w-full flex items-center justify-between py-4 text-left group focus:outline-none"
       >
         <span
-          className={`text-lg font-medium transition-colors ${isOpen ? "text-teal-600" : "text-slate-800 group-hover:text-teal-500"}`}
+          className={`text-sm font-semibold pr-4 transition-colors ${
+            isOpen ? "text-[#1A6BCC]" : "text-[#1A1E26] group-hover:text-[#1A6BCC]"
+          }`}
         >
           {q}
         </span>
-        <div
-          className={`p-2 rounded-full transition-colors ${isOpen ? "bg-teal-100 text-teal-600" : "bg-slate-100 text-slate-500"}`}
-        >
-          {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-        </div>
+        <ChevronDown
+          size={15}
+          strokeWidth={1.5}
+          className={`shrink-0 transition-all duration-200 ${
+            isOpen ? "rotate-180 text-[#1A6BCC]" : "text-gray-300"
+          }`}
+        />
       </button>
       <AnimatePresence>
         {isOpen && (
@@ -39,188 +95,207 @@ const AccordionItem = ({ q, a, isOpen, onClick }) => {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.22 }}
+            className="overflow-hidden"
           >
-            <div className="pb-6 text-slate-600 leading-relaxed">{a}</div>
+            <p className="pb-5 text-sm text-gray-500 leading-relaxed">{a}</p>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
-};
+}
 
+/* ─── Main Page ─────────────────────────────────────── */
 export default function FAQ() {
-  const [activeTab, setActiveTab] = useState("patient"); // 'patient' | 'doctor'
+  const [activeTab,   setActiveTab]   = useState("patients");
   const [searchQuery, setSearchQuery] = useState("");
-  const [openIndex, setOpenIndex] = useState(0); // First item open by default
-
-  // Hardcoded Questions
-  const questions = {
-    patients: [
-      {
-        q: "Is there a fee to book an appointment?",
-        a: "Yes, there is a nominal platform fee of ₹5 per application/booking. This ensures your slot is secured and helps us maintain the server infrastructure.",
-      },
-      {
-        q: "How does the Live Queue work?",
-        a: "Once you book, you get a Token Number (e.g., #12). On the appointment day, open the app to see the 'Current Serving Token'. If the doctor is seeing #8, you know you have some time before you need to leave home.",
-      },
-      {
-        q: "Can I cancel my appointment?",
-        a: "Yes, you can cancel up to 1 hour before the scheduled time. However, the ₹5 platform fee is non-refundable.",
-      },
-      {
-        q: "Do I need to download an app?",
-        a: "No! MediQ works perfectly on your phone's browser (Chrome, Safari). However, downloading the app gives you better notifications.",
-      },
-      {
-        q: "Where can I see my prescription?",
-        a: "After your visit, the doctor will upload your prescription. You can find it in the 'My Records' section of your dashboard and download it as a PDF.",
-      },
-    ],
-    doctors: [
-      {
-        q: "What are the subscription charges?",
-        a: "We have three tiers: Starter (₹0/mo), Professional (₹499/mo), and Multi-Clinic (₹999/mo). You can start for free and upgrade when you need more features.",
-      },
-      {
-        q: "Do I need special hardware?",
-        a: "No. You can run the MediQ dashboard on any laptop, tablet, or even a smartphone. A reliable internet connection is recommended for the Live Queue to sync instantly.",
-      },
-      {
-        q: "Can I manage walk-in patients?",
-        a: "Absolutely. The 'Walk-In Manager' allows you to add patients who come directly to the clinic. They will be assigned a token number and slotted into the existing queue automatically.",
-      },
-      {
-        q: "Is patient data secure?",
-        a: "Yes. We use 256-bit encryption and comply with healthcare data standards. Your patient data is yours; we do not sell or share it with third parties.",
-      },
-    ],
-  };
-
-  // Filter Logic
-  const currentQuestions =
-    activeTab === "patient" ? questions.patients : questions.doctors;
-  const filteredQuestions = currentQuestions.filter(
-    (item) =>
-      item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.a.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const [openIndex,   setOpenIndex]   = useState(0);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setOpenIndex(null); // Close all when switching tabs
+    setOpenIndex(null);
     setSearchQuery("");
   };
 
+  const currentQuestions = QUESTIONS[activeTab];
+  const filteredQuestions = currentQuestions.filter(
+    (item) =>
+      item.q.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.a.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-teal-500 selection:text-white">
-      {/* --- HEADER --- */}
-      <section className="pt-32 pb-16 bg-white px-4">
-        <div className="container mx-auto text-center max-w-3xl">
+    <div className="min-h-screen bg-white text-[#1A1E26] font-sans overflow-x-hidden">
+
+      {/* ═══════════════════════════════════════════
+          HERO
+      ═══════════════════════════════════════════ */}
+      <section className="bg-white border-b border-gray-200 pt-28 pb-14 px-4">
+        <div className="max-w-2xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-bold mb-6 border border-teal-200">
-              <HelpCircle size={14} />
-              <span>Help Center</span>
+            {/* Uniform slate badge */}
+            <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold bg-slate-100 text-slate-600 uppercase tracking-widest px-3 py-1 rounded mb-6">
+              <HelpCircle size={11} strokeWidth={2} />
+              Help Center
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-8 text-slate-900">
-              How can we help you?
-            </h1>
 
-            {/* Search Bar */}
-            <div className="relative max-w-xl mx-auto mb-10 group">
-              <div className="absolute inset-0 bg-teal-500 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
-              <div className="relative bg-white rounded-full shadow-lg flex items-center px-6 py-4 border border-slate-200 focus-within:ring-2 ring-teal-500 transition-all">
-                <Search className="text-slate-400" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search for answers (e.g., 'refund', 'queue')..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-transparent border-none outline-none ml-4 text-slate-700 placeholder:text-slate-400"
-                />
-              </div>
+            <h1 className="text-4xl sm:text-5xl font-black text-[#1A1E26] tracking-tight leading-[1.08] mb-4">
+              How can we
+              <br />
+              <span className="text-[#1A6BCC]">help you?</span>
+            </h1>
+            <p className="text-sm text-gray-500 mb-8">
+              Search across all questions, or browse by category below.
+            </p>
+
+            {/* Flat inline search bar (no glow, no blur) */}
+            <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 max-w-md mx-auto focus-within:border-[#1A6BCC] transition-colors">
+              <Search size={16} className="text-gray-400 shrink-0" strokeWidth={1.75} />
+              <input
+                type="text"
+                placeholder="Search questions…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full text-sm font-medium text-[#1A1E26] placeholder:text-gray-400 focus:outline-none bg-transparent"
+              />
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* --- FAQ SECTION --- */}
-      <section className="py-12 px-4 bg-slate-50">
-        <div className="container mx-auto max-w-3xl">
-          {/* Tabs */}
-          <div className="flex justify-center mb-12">
-            <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm inline-flex">
-              <button
-                onClick={() => handleTabChange("patient")}
-                className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "patient" ? "bg-teal-500 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
-              >
-                For Patients
-              </button>
-              <button
-                onClick={() => handleTabChange("doctor")}
-                className={`px-8 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "doctor" ? "bg-teal-500 text-white shadow-md" : "text-slate-600 hover:bg-slate-50"}`}
-              >
-                For Doctors
-              </button>
+      {/* ═══════════════════════════════════════════
+          FAQ BODY
+      ═══════════════════════════════════════════ */}
+      <section className="bg-slate-50 py-16 px-4">
+        <div className="max-w-2xl mx-auto">
+
+          {/* ── Tab toggle (flat sliding indicator) ── */}
+          <div className="flex justify-center mb-8">
+            <div
+              role="tablist"
+              aria-label="FAQ for"
+              className="relative flex bg-slate-100 rounded-lg p-1"
+            >
+              {/* Sliding white indicator */}
+              <div
+                aria-hidden="true"
+                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-md shadow-sm border border-gray-200 transition-transform duration-200 ease-out ${
+                  activeTab === "doctors" ? "translate-x-[calc(100%+8px)]" : "translate-x-0"
+                }`}
+              />
+              {[
+                { key: "patients", label: "For Patients" },
+                { key: "doctors",  label: "For Doctors"  },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={activeTab === key}
+                  onClick={() => handleTabChange(key)}
+                  className={`relative z-10 px-6 py-2 text-xs font-semibold uppercase tracking-wide transition-colors duration-150 rounded-md w-36 text-center ${
+                    activeTab === key ? "text-[#1A1E26]" : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Questions List */}
-          <div className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-slate-200 min-h-100">
-            {filteredQuestions.length > 0 ? (
-              filteredQuestions.map((item, index) => (
-                <AccordionItem
-                  key={index}
-                  q={item.q}
-                  a={item.a}
-                  isOpen={openIndex === index}
-                  onClick={() =>
-                    setOpenIndex(openIndex === index ? null : index)
-                  }
-                />
-              ))
-            ) : (
-              <div className="text-center py-20">
-                <div className="bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                  <FileQuestion size={32} />
+          {/* ── Accordion container ── */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab + searchQuery}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+            >
+              {filteredQuestions.length > 0 ? (
+                <div className="bg-white border border-gray-200 rounded-lg px-6">
+                  {filteredQuestions.map((item, index) => (
+                    <AccordionItem
+                      key={index}
+                      q={item.q}
+                      a={item.a}
+                      isOpen={openIndex === index}
+                      onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                    />
+                  ))}
                 </div>
-                <h3 className="text-lg font-bold text-slate-700">
-                  No matching questions found
-                </h3>
-                <p className="text-slate-500">
-                  Try searching for something else or contact support.
-                </p>
-              </div>
-            )}
-          </div>
+              ) : (
+                /* No-results state */
+                <div className="bg-white border border-gray-200 rounded-lg px-6 py-16 text-center">
+                  <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-4 text-slate-400">
+                    <FileQuestion size={22} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="text-sm font-bold text-[#1A1E26] mb-1">No matching questions</h3>
+                  <p className="text-xs text-gray-500">Try a different search term, or contact our support team.</p>
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </section>
 
-      {/* --- CONTACT CTA --- */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="bg-linear-to-br from-slate-100 to-slate-200 rounded-3xl p-10 md:p-16 border border-slate-200">
-            <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <MessageCircle size={32} />
+      {/* Section divider */}
+      <div className="border-t border-gray-200" />
+
+      {/* ═══════════════════════════════════════════
+          CONTACT CTA PANEL
+      ═══════════════════════════════════════════ */}
+      <section className="bg-white py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white border border-gray-200 rounded-xl p-10 md:p-14 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            {/* Text */}
+            <div className="max-w-md">
+              {/* Uniform slate icon */}
+              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-600 mb-5">
+                <MessageCircle size={18} strokeWidth={1.75} />
+              </div>
+              <span className="inline-block text-[10px] font-semibold bg-slate-100 text-slate-600 uppercase tracking-widest px-2.5 py-1 rounded mb-4">
+                Still need help?
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#1A1E26] tracking-tight leading-tight mb-3">
+                Talk to our team.
+              </h2>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Can't find the answer you're looking for? Our support team typically replies within 2 hours.
+              </p>
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Still have questions?
-            </h2>
-            <p className="text-slate-600 mb-8 max-w-lg mx-auto">
-              Can't find the answer you're looking for? Please chat to our
-              friendly team.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="flex items-center justify-center gap-2 px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-teal-500/20">
-                <Mail size={18} /> Contact Support
-              </button>
-              <button className="flex items-center justify-center gap-2 px-8 py-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold transition-all">
-                <Phone size={18} /> +91 9434405501
-              </button>
+
+            {/* Actions */}
+            <div className="flex flex-col items-start gap-3 shrink-0">
+              {/* Primary */}
+              <a
+                href="mailto:support@mediq.app"
+                id="faq-contact-btn"
+                className="flex items-center gap-2 bg-[#1A6BCC] hover:bg-[#155baa] text-white font-bold text-sm px-7 py-3.5 rounded-lg transition-colors duration-150 active:scale-95 whitespace-nowrap"
+              >
+                <Mail size={14} />
+                Email Support
+              </a>
+
+              {/* Ghost: phone */}
+              <a
+                href="tel:+919434405501"
+                className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-[#1A1E26] transition-colors group"
+              >
+                <Phone size={13} strokeWidth={1.5} className="text-slate-400 group-hover:text-[#1A6BCC] transition-colors" />
+                <span className="underline-offset-2 group-hover:underline">+91 94344 05501</span>
+              </a>
+
+              <Link
+                to="/pricing"
+                className="text-xs text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                View pricing plans →
+              </Link>
             </div>
           </div>
         </div>

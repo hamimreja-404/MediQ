@@ -1,55 +1,104 @@
-// src/Components/Footer.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Stethoscope } from 'lucide-react';
+/**
+ * Footer.jsx — MediQ
+ * Zocdoc-Clean v2 refinements:
+ *  - Brand column aligns flush to the right-side column grid
+ *  - Footer links: text-slate-500 hover:text-slate-900 transition-colors
+ *  - Uniform crisp slate-100 border, flat white background
+ *  - Column headings: text-[#1A1E26] font-semibold (not heavy bold)
+ *  - Logo mark: slate-100 bg with slate-700 icon (no teal fill)
+ */
+import React from "react";
+import { Link } from "react-router-dom";
+import { Stethoscope } from "lucide-react";
+
+const LINKS = {
+  Product: [
+    { to: "/features", label: "Features" },
+    { to: "/pricing",  label: "Pricing"  },
+    { to: "/faq",      label: "FAQ"      },
+  ],
+  Company: [
+    { to: "/about",   label: "About Us" },
+    { to: "/careers", label: "Careers"  },
+    { to: "/contact", label: "Contact"  },
+  ],
+  Legal: [
+    { to: "/privacy", label: "Privacy Policy"   },
+    { to: "/terms",   label: "Terms of Service" },
+  ],
+};
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-slate-100 py-12 border-t border-slate-200 text-slate-800 transition-colors duration-300">
-       <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-             <div className="col-span-1 md:col-span-1">
-                <Link to="/" className="flex items-center gap-2 mb-4">
-                   <div className="bg-teal-500 text-white p-1 rounded">
-                      <Stethoscope size={20} />
-                   </div>
-                   <span className="text-xl font-bold">MediQ</span>
-                </Link>
-                <p className="text-slate-500 text-sm">Simplifying healthcare access for everyone, everywhere.</p>
-             </div>
-             
-             <div>
-                <h4 className="font-bold mb-4">Product</h4>
-                <ul className="space-y-2 text-sm text-slate-500">
-                   <li><Link to="/features" className="hover:text-teal-500 transition-colors">Features</Link></li>
-                   <li><Link to="/pricing" className="hover:text-teal-500 transition-colors">Pricing</Link></li>
-                   <li><Link to="/faq" className="hover:text-teal-500 transition-colors">FAQ</Link></li>
-                </ul>
-             </div>
-             
-             <div>
-                <h4 className="font-bold mb-4">Company</h4>
-                <ul className="space-y-2 text-sm text-slate-500">
-                   <li><Link to="/about" className="hover:text-teal-500 transition-colors">About Us</Link></li>
-                   <li><Link to="/careers" className="hover:text-teal-500 transition-colors">Careers</Link></li>
-                   <li><Link to="/contact" className="hover:text-teal-500 transition-colors">Contact</Link></li>
-                </ul>
-             </div>
-             
-             <div>
-                <h4 className="font-bold mb-4">Legal</h4>
-                <ul className="space-y-2 text-sm text-slate-500">
-                   <li><Link to="/privacy" className="hover:text-teal-500 transition-colors">Privacy Policy</Link></li>
-                   <li><Link to="/terms" className="hover:text-teal-500 transition-colors">Terms of Service</Link></li>
-                </ul>
-             </div>
+    <footer className="bg-white border-t border-slate-200">
+      <div className="max-w-6xl mx-auto px-6 py-12">
+
+        {/* ── Main grid ──────────────────────────────── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+
+          {/* Brand column */}
+          <div className="col-span-2 md:col-span-1 flex flex-col gap-4">
+            {/* Logo */}
+            <Link to="/" className="inline-flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700">
+                <Stethoscope size={16} strokeWidth={1.75} />
+              </div>
+              <span className="text-base font-black text-[#1A1E26] tracking-tight">
+                MediQ
+              </span>
+            </Link>
+
+            {/* Brand description — aligns with column top */}
+            <p className="text-sm text-slate-500 leading-relaxed max-w-[220px]">
+              Simplifying healthcare access for everyone, everywhere.
+            </p>
           </div>
-          <div className="border-t border-slate-200 pt-8 text-center text-slate-400 text-sm">
-             &copy; {currentYear} MediQ Healthcare Systems. All rights reserved.
+
+          {/* Link columns */}
+          {Object.entries(LINKS).map(([heading, items]) => (
+            <div key={heading}>
+              <h4 className="text-xs font-semibold text-[#1A1E26] uppercase tracking-widest mb-4">
+                {heading}
+              </h4>
+              <ul className="space-y-2.5">
+                {items.map(({ to, label }) => (
+                  <li key={label}>
+                    <Link
+                      to={to}
+                      className="text-sm text-slate-500 hover:text-slate-900 transition-colors duration-150"
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Bottom bar ─────────────────────────────── */}
+        <div className="mt-10 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-slate-400">
+            &copy; {year} MediQ Healthcare Systems. All rights reserved.
+          </p>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/privacy"
+              className="text-xs text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              Privacy
+            </Link>
+            <Link
+              to="/terms"
+              className="text-xs text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              Terms
+            </Link>
           </div>
-       </div>
+        </div>
+      </div>
     </footer>
   );
 }

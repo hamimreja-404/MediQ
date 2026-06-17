@@ -2,26 +2,18 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Search,
-  MapPin,
-  Clock,
-  Award,
   Stethoscope,
   Filter,
   ChevronDown,
-  Banknote,
-  GraduationCap,
-  ArrowRight,
-  Star,
   Loader2,
   AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import toast, { Toaster } from "react-hot-toast";
+import DoctorProductCard from "../Components/DoctorProductCard";
+
 const API_URL = import.meta.env.VITE_API_URL;
-// Common Image for all doctors (Fallback if API doesn't provide one)
-const COMMON_DOC_IMG =
-  "https://plus.unsplash.com/premium_vector-1728572090276-1fcf27ce399d?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8ZG9jdG9yfGVufDB8fDB8fHww";
 
 export default function DoctorsList() {
   const navigate = useNavigate();
@@ -114,7 +106,21 @@ export default function DoctorsList() {
   // -- HANDLERS --
   const handleCardClick = (id) => {
     {isDemo ? navigate(`/doctor/${id}?demo=true`): navigate(`/doctor/${id}`)}
+  };
 
+  const handleBookSlot = (doctorId, date, time) => {
+    const doc = doctors.find((d) => d._id === doctorId);
+    if (!doc) return;
+    const params = new URLSearchParams({
+      doctorId: doc._id,
+      doctorName: doc.fullName,
+      date: date,
+      location: doc.location || "City Clinic",
+    });
+    if (isDemo) {
+      params.append("demo", "true");
+    }
+    navigate(`/book-appointment?${params.toString()}`);
   };
 
   if (error) {
@@ -144,40 +150,39 @@ export default function DoctorsList() {
     }
   }, [isDemo]);
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-teal-500 selection:text-white">
-{isDemo && (
-  <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-teal-100 rounded-2xl p-4 z-50 w-56 animate-in slide-in-from-bottom-5">
-    <div className="flex items-center gap-2 mb-3">
-      <span className="text-base">🩺</span>
-      <h4 className="font-black text-slate-900 text-xs tracking-wide uppercase">
-        Demo Guide
-      </h4>
-    </div>
-    
-    <p className="text-xs text-slate-600 font-medium leading-relaxed">
-      Click on any <strong className="text-teal-600">Doctor's Card</strong> from the list to view their profile and start the booking process.
-    </p>
-  </div>
-)}
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-[#1A6BCC] selection:text-white">
+      {isDemo && (
+        <div className="fixed bottom-6 right-6 bg-white shadow-md border border-gray-200 rounded-xl p-4 z-50 w-56 animate-in slide-in-from-bottom-5">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-base">🩺</span>
+            <h4 className="font-bold text-[#1A1E26] text-xs tracking-wide uppercase">
+              Demo Guide
+            </h4>
+          </div>
+          <p className="text-xs text-gray-500 font-medium leading-relaxed">
+            Click on any <strong className="text-[#1A6BCC]">Time Slot</strong> to book instantly, or click the doctor's details to view their full profile.
+          </p>
+        </div>
+      )}
 
       <Toaster position="top-right" />
       {/* --- HEADER SECTION --- */}
       <section className="pt-32 pb-12 px-4 bg-white border-b border-slate-200">
-        <div className="container mx-auto max-w-6xl">
+        <div className="container mx-auto max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-xs font-bold mb-4 border border-teal-200">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#1A6BCC] text-xs font-bold mb-4 border border-blue-100">
               <Stethoscope size={14} />
               <span>Find Your Specialist</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-[#1A1E26] tracking-tight mb-3">
               Book appointments with{" "}
-              <span className="text-teal-600">top doctors.</span>
+              <span className="text-[#1A6BCC]">top doctors.</span>
             </h1>
-            <p className="text-lg text-slate-600 max-w-2xl">
+            <p className="text-base text-gray-500 max-w-2xl">
               Verified specialists, transparent fees, and zero waiting time.
             </p>
           </motion.div>
@@ -187,7 +192,7 @@ export default function DoctorsList() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-10 p-4 bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col md:flex-row gap-4 items-center"
+            className="mt-8 p-4 bg-white rounded-xl shadow-xs border border-gray-200 flex flex-col md:flex-row gap-4 items-center"
           >
             {/* Search Input */}
             <div className="relative w-full md:flex-1">
@@ -200,7 +205,7 @@ export default function DoctorsList() {
                 placeholder="Search doctor, clinic, or location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
+                className="w-full pl-12 pr-4 py-3 bg-[#F4F5F7] border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A6BCC] focus:bg-white text-[#1A1E26] placeholder-gray-400 font-medium transition-all"
               />
             </div>
 
@@ -212,7 +217,7 @@ export default function DoctorsList() {
               <select
                 value={selectedSpec}
                 onChange={(e) => setSelectedSpec(e.target.value)}
-                className="w-full pl-12 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-slate-700 font-medium"
+                className="w-full pl-12 pr-10 py-3 bg-[#F4F5F7] border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#1A6BCC] focus:bg-white cursor-pointer text-[#1A1E26] font-medium"
               >
                 {uniqueSpecializations.map((spec) => (
                   <option key={spec} value={spec}>
@@ -234,7 +239,7 @@ export default function DoctorsList() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full pl-12 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer text-slate-700 font-medium"
+                className="w-full pl-12 pr-10 py-3 bg-[#F4F5F7] border border-gray-200 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-[#1A6BCC] focus:bg-white cursor-pointer text-[#1A1E26] font-medium"
               >
                 <option value="default">Sort By</option>
                 <option value="fees_low">Price: Low to High</option>
@@ -251,140 +256,50 @@ export default function DoctorsList() {
       </section>
 
       {/* --- DOCTORS LIST --- */}
-      <section className="py-16 px-4">
+      <section className="py-12 px-4">
         <div className="container mx-auto max-w-6xl">
           {isLoading ? (
             // Loading State
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <Loader2 size={40} className="animate-spin mb-4 text-teal-500" />
+              <Loader2 size={40} className="animate-spin mb-4 text-[#1A6BCC]" />
               <p>Finding the best doctors for you...</p>
             </div>
           ) : (
             <>
-              <div className="mb-6 text-slate-500 font-medium">
+              <div className="mb-6 text-gray-500 font-medium">
                 Showing {filteredDoctors.length} results
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <AnimatePresence>
                   {filteredDoctors.map((doc) => (
                     <motion.div
                       key={doc._id}
                       layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      whileHover={{ y: -5 }}
-                      onClick={() => handleCardClick(doc._id)}
-                      className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col sm:flex-row"
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -15 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-full"
                     >
-                      {/* Image Section */}
-                      <div className="sm:w-48 h-48 sm:h-auto bg-slate-100 relative shrink-0">
-                        <img
-                          src={doc.image || COMMON_DOC_IMG}
-                          alt={doc.fullName}
-                          onError={(e) => {
-                            e.target.src = COMMON_DOC_IMG;
-                          }}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold text-slate-700 flex items-center gap-1 shadow-sm">
-                          <Star
-                            size={12}
-                            className="text-yellow-500 fill-yellow-500"
-                          />
-                          {doc.rating || "New"}
-                        </div>
-                      </div>
-
-                      {/* Content Section */}
-                      <div className="p-6 flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <div className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">
-                                {doc.specialization}
-                              </div>
-                              <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
-                                {doc.fullName}
-                              </h3>
-                            </div>
-                            {doc.isVerified && (
-                              <div
-                                className="text-teal-500"
-                                title="Verified Doctor"
-                              >
-                                <Award size={20} />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="text-sm text-slate-500 mb-4 flex items-center gap-2">
-                            <GraduationCap
-                              size={16}
-                              className="text-slate-400"
-                            />
-                            <span>
-                              {doc.degree} - {doc.college}
-                            </span>
-                          </div>
-
-                          <div className="space-y-2 mb-6">
-                            <div className="flex items-center gap-3 text-sm text-slate-600">
-                              <div className="w-8 flex justify-center">
-                                <MapPin size={16} className="text-slate-400" />
-                              </div>
-                              <span className="truncate">
-                                {doc.clinicName}, {doc.location}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-slate-600">
-                              <div className="w-8 flex justify-center">
-                                <Clock size={16} className="text-slate-400" />
-                              </div>
-                              <span>{doc.timing}</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-sm text-slate-600">
-                              <div className="w-8 flex justify-center">
-                                <Stethoscope
-                                  size={16}
-                                  className="text-slate-400"
-                                />
-                              </div>
-                              <span>{doc.experience} Years Experience</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer / Price */}
-                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                          <div>
-                            <div className="text-xs text-slate-400 font-medium">
-                              Consultation Fee
-                            </div>
-                            <div className="text-lg font-bold text-slate-900 flex items-center gap-1">
-                              <Banknote size={16} className="text-teal-500" />₹
-                              {doc.fees}
-                            </div>
-                          </div>
-                          <button className="bg-teal-50 hover:bg-teal-100 text-teal-700 px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2 group-hover:bg-teal-500 group-hover:text-teal-700">
-                            Book Now <ArrowRight size={16} />
-                          </button>
-                        </div>
-                      </div>
+                      <DoctorProductCard
+                        doctor={doc}
+                        onBookSlot={handleBookSlot}
+                        onViewProfile={handleCardClick}
+                      />
                     </motion.div>
                   ))}
                 </AnimatePresence>
 
                 {filteredDoctors.length === 0 && !isLoading && (
-                  <div className="col-span-full py-20 text-center">
-                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                      <Search size={32} />
+                  <div className="col-span-full py-20 text-center border border-dashed border-gray-200 rounded-xl bg-white">
+                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                      <Search size={24} />
                     </div>
-                    <h3 className="text-lg font-bold text-slate-700">
+                    <h3 className="text-base font-bold text-[#1A1E26]">
                       No doctors found
                     </h3>
-                    <p className="text-slate-500">
+                    <p className="text-sm text-gray-400 mt-1">
                       Try adjusting your filters or search terms.
                     </p>
                   </div>

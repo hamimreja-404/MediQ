@@ -25,6 +25,7 @@ import Login from './Auth/WithoutOTP/Login.jsx'
 import PatientDashboardV2 from './Patient_Interface/PatientDashboard.jsx'
 import DoctorDashboard from './Doctor/Dashboard.jsx'
 import LiveDesk from './Doctor/liveDesk.jsx'
+import ZocdocShowcase from './Pages/ZocdocShowcase.jsx'
 
 function App() {
   return (
@@ -48,6 +49,9 @@ function App() {
           <Route path="/register" element={<RegisterPatient />} />
 
           <Route path="/book-appointment" element={<BookAppointmentV2 />} />
+
+          {/* ── Zocdoc-Clean component preview (dev only) ── */}
+          <Route path="/zocdoc-showcase" element={<ZocdocShowcase />} />
 
         </Route>
           <Route path="/patient/dashboard/:patientId" element={<PatientDashboardV2 />} />

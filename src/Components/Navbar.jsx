@@ -43,17 +43,8 @@ const navigate = useNavigate();
         </Link>
 
         {/* Desktop Search */}
-        <div className="hidden md:flex items-center  rounded-full px-4 py-2 border border-slate-200 focus-within:ring-2 ring-teal-500 w-1/3 transition-all">
-          <Search size={18} className="text-slate-400" />
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Search doctors..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="bg-transparent border-none outline-none text-sm ml-2 w-full text-slate-100 placeholder:text-slate-400"
-          />
-          </form>
+        <div className="hidden md:flex items-center  rounded-full px-4 py-2  w-1/3 transition-all">
+
         </div>
 
         {/* Desktop Links */}

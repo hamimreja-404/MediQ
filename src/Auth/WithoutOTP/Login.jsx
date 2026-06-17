@@ -23,18 +23,18 @@ const Toast = ({ message, type, isVisible }) => (
         initial={{ opacity: 0, y: -50, x: "-50%" }}
         animate={{ opacity: 1, y: 20, x: "-50%" }}
         exit={{ opacity: 0, y: -50, x: "-50%" }}
-        className={`fixed top-0 left-1/2 z-100 flex items-center gap-3 px-6 py-4 rounded-full shadow-2xl border ${
+        className={`fixed top-0 left-1/2 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-lg border ${
           type === "success"
-            ? "bg-white text-teal-700 border-teal-100"
+            ? "bg-white text-emerald-700 border-emerald-100"
             : "bg-white text-red-600 border-red-100"
         }`}
       >
         {type === "success" ? (
-          <CheckCircle size={20} className="text-teal-500" />
+          <CheckCircle size={18} className="text-emerald-500" />
         ) : (
-          <AlertCircle size={20} className="text-red-500" />
+          <AlertCircle size={18} className="text-red-500" />
         )}
-        <span className="font-semibold text-sm">{message}</span>
+        <span className="font-bold text-sm">{message}</span>
       </motion.div>
     )}
   </AnimatePresence>
@@ -98,60 +98,64 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#F4F5F7] font-sans selection:bg-[#1A6BCC] selection:text-white flex items-center justify-center p-4 relative overflow-hidden">
       <Toast message={toast.msg} type={toast.type} isVisible={toast.show} />
 
-      <div className="flex w-full max-w-5xl bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 relative z-10">
+      <div className="flex w-full max-w-5xl bg-white rounded-xl border border-gray-200 overflow-hidden relative z-10 shadow-none">
         {/* Branding Side */}
-        <div className={`hidden lg:flex w-1/2 p-12 text-white relative flex-col justify-between transition-colors duration-500 ${role === 'patient' ? 'bg-teal-600' : 'bg-blue-700'}`}>
+        <div className="hidden lg:flex w-1/2 p-12 text-white relative flex-col justify-between bg-gradient-to-br from-[#1A6BCC] to-[#1455a2]">
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-8">
-              <Stethoscope size={28} />
-              <span className="text-3xl font-bold">MediQ</span>
+              <div className="bg-white/10 p-2 rounded-lg backdrop-blur-xs">
+                <Stethoscope size={28} />
+              </div>
+              <span className="text-3xl font-bold tracking-tight">MediQ</span>
             </div>
             <h2 className="text-4xl font-bold leading-tight">
               {role === "patient" ? "Fast Access to Healthcare." : "Manage your practice efficiently."}
             </h2>
           </div>
+          <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
         </div>
 
         {/* Login Form Side */}
         <div className="w-full lg:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-bold text-slate-900">Welcome Back</h2>
-            <p className="text-slate-500">Sign in to your {role} account.</p>
+            <h2 className="text-3xl font-black text-[#1A1E26] tracking-tight">Welcome Back</h2>
+            <p className="text-gray-500 font-medium mt-1">Sign in to your {role} account.</p>
           </div>
 
-          <div className="flex p-1.5 bg-slate-100 rounded-xl mb-8 relative">
+          {/* Role Switcher */}
+          <div className="flex p-1 bg-gray-100 rounded-lg mb-8 relative border border-gray-200/50">
             <div
-              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-lg shadow-sm transition-all duration-300 ${role === "doctor" ? "left-[calc(50%+3px)]" : "left-1.5"}`}
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-md shadow-xs transition-all duration-300 ${role === "doctor" ? "left-[calc(50%+2px)]" : "left-1"}`}
             ></div>
             <button
               onClick={() => setRole("patient")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold relative z-10 transition-colors ${role === "patient" ? "text-teal-600" : "text-slate-500"}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-bold relative z-10 transition-colors ${role === "patient" ? "text-[#1A6BCC]" : "text-gray-500"}`}
             >
-              <User size={18} /> Patient
+              <User size={16} /> Patient
             </button>
             <button
               onClick={() => setRole("doctor")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold relative z-10 transition-colors ${role === "doctor" ? "text-blue-600" : "text-slate-500"}`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-xs font-bold relative z-10 transition-colors ${role === "doctor" ? "text-[#1A6BCC]" : "text-gray-500"}`}
             >
-              <Stethoscope size={18} /> Doctor
+              <Stethoscope size={16} /> Doctor
             </button>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                 {role === "patient" ? "Mobile Number" : "Mobile or License Number"}
               </label>
-              <div className="relative">
-                <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${role === 'patient' ? 'text-teal-500' : 'text-blue-500'}`}>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1A6BCC] transition-colors">
                   {role === "patient" ? <Smartphone size={20} /> : <User size={20} />}
                 </div>
                 <input
                   type="text"
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+                  className="w-full bg-white border border-gray-200 text-[#1A1E26] rounded-lg py-3.5 pl-11 pr-4 outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all font-medium"
                   placeholder={role === "patient" ? "10-digit mobile" : "License ID or Mobile"}
                   value={formData.identifier}
                   onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
@@ -160,14 +164,14 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Password</label>
-              <div className="relative">
-                <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${role === 'patient' ? 'text-teal-500' : 'text-blue-500'}`}>
+              <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">Password</label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#1A6BCC] transition-colors">
                   <Lock size={20} />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className="w-full bg-white border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-12 outline-none focus:ring-2 focus:ring-teal-500/20 transition-all"
+                  className="w-full bg-white border border-gray-200 text-[#1A1E26] rounded-lg py-3.5 pl-11 pr-11 outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all font-medium"
                   placeholder="Your password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
@@ -175,7 +179,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -185,17 +189,17 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg transition-all flex items-center justify-center gap-2 ${role === "patient" ? "bg-teal-600 hover:bg-teal-500 shadow-teal-500/30" : "bg-blue-600 hover:bg-blue-500 shadow-blue-500/30"}`}
+              className="w-full py-3.5 bg-[#1A6BCC] hover:bg-[#155baa] text-white rounded-lg font-bold text-base transition-colors flex items-center justify-center gap-2 shadow-none disabled:opacity-50"
             >
               {isLoading ? <Loader2 size={24} className="animate-spin" /> : "Sign In"}
             </button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-slate-500">
+          <div className="mt-8 text-center text-sm text-gray-500 font-medium">
             {role === "patient" ? (
-              <p>Don't have an account? <Link to="/register" className="font-bold text-teal-600 hover:underline">Register</Link></p>
+              <p>Don't have an account? <Link to="/register" className="font-bold text-[#1A6BCC] hover:underline">Register</Link></p>
             ) : (
-              <p>Want to join our network? <Link to="/onboarding" className="font-bold text-blue-600 hover:underline">Apply Here</Link></p>
+              <p>Want to join our network? <Link to="/onboarding" className="font-bold text-[#1A6BCC] hover:underline">Apply Here</Link></p>
             )}
           </div>
         </div>

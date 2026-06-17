@@ -14,6 +14,7 @@ import {
   X,
   Loader2,
   Trash2,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useLocation } from "react-router-dom";
@@ -211,59 +212,68 @@ export default function PatientDashboardV2() {
   }, [isDemo, hasSeenDemo, upcomingAppointments]);
   if (loading)
     return (
-      <div className="flex items-center justify-center min-h-screen font-bold text-slate-600">
-        Loading your health records...
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin h-12 w-12 border-4 border-[#1A6BCC] border-t-transparent rounded-full"></div>
+          <p className="text-gray-500 font-semibold">
+            Loading your health records...
+          </p>
+        </div>
       </div>
     );
 
   if (!user)
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        User not found. Please login again.
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F4F5F7] p-6 text-center">
+        <div className="bg-white p-8 rounded-xl border border-gray-200 max-w-sm w-full">
+          <AlertCircle size={48} className="text-red-500 mb-4 mx-auto" />
+          <h2 className="text-xl font-bold text-[#1A1E26] mb-2">Oops!</h2>
+          <p className="text-gray-500 text-sm mb-6">User not found. Please login again.</p>
+        </div>
       </div>
     );
 
   const completeness = calculateCompleteness(user);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-12">
+    <div className="min-h-screen bg-[#F4F5F7] pb-12 font-sans selection:bg-[#1A6BCC] selection:text-white">
       {showDemoPopup && (
-        <div className="fixed inset-0 z-999 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
           <Toaster position="top-right" />
 
           {/* Background Blur */}
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+          <div className="absolute inset-0 bg-[#1A1E26]/40 backdrop-blur-xs"></div>
 
           {/* Popup */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative bg-white rounded-3xl p-8 w-[90%] max-w-md text-center shadow-2xl"
+            className="relative bg-white rounded-xl border border-gray-200 p-8 w-[90%] max-w-md text-center shadow-none animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Icon */}
-            <div className="w-16 h-16 mx-auto mb-4 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-blue-50 text-[#1A6BCC] border border-blue-100/50 rounded-xl flex items-center justify-center">
               <CalendarDays size={28} />
             </div>
 
             {/* Text */}
-            <h2 className="text-xl font-black text-slate-900 mb-2">
+            <h2 className="text-xl font-bold text-[#1A1E26] mb-2">
               Demo Mode Active
             </h2>
 
-            <p className="text-slate-500 text-sm mb-8">
+            <p className="text-gray-500 text-sm mb-6 leading-relaxed">
               Click below to open the{" "}
-              <span className="font-bold text-teal-600">Doctor Dashboard</span>{" "}
+              <span className="font-bold text-[#1A6BCC]">Doctor Dashboard</span>{" "}
               in a new window so you can watch the live queue sync in real-time.
             </p>
 
-            {/* 👉 NEW: The button that satisfies browser popup rules */}
+            {/* Button */}
             <button
               onClick={() => {
                 const doctorId =
                   upcomingAppointments[0]?.doctorId?._id ||
                   upcomingAppointments[0]?.doctorId;
 
-                // 1. Open the new tab (Browser allows this because it's an onClick!)
+                // 1. Open the new tab
                 window.open(
                   `/doctor/dashboard/${doctorId}?demo=true`,
                   "_blank",
@@ -272,82 +282,84 @@ export default function PatientDashboardV2() {
                 // 2. Hide this popup on the Patient side
                 setShowDemoPopup(false);
               }}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200"
+              className="w-full bg-[#1A6BCC] hover:bg-[#155baa] text-white py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-none"
             >
               Open Doctor Window
             </button>
 
             <button
               onClick={() => setShowDemoPopup(false)}
-              className="w-full mt-3 py-3 text-slate-400 font-bold text-sm hover:text-slate-600 transition-colors"
+              className="w-full mt-3 py-2 text-gray-400 font-semibold text-sm hover:text-gray-600 transition-colors"
             >
               Cancel
             </button>
           </motion.div>
         </div>
       )}
-{isDemo && (
-  <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-teal-100 rounded-3xl p-6 z-50 w-80">
-    <div className="flex items-center gap-3 mb-4">
-      <div className="w-8 h-8 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center shadow-sm">
-        <span className="text-lg">📱</span>
-      </div>
-      <h4 className="font-black text-slate-900 text-xs tracking-widest uppercase">
-        Patient Experience
-      </h4>
-    </div>
 
-    <p className="text-xs text-slate-500 mb-5 leading-relaxed font-medium">
-      This is the receiving end of the WebSockets connection. Watch how this screen reacts:
-    </p>
+      {isDemo && (
+        <div className="fixed bottom-6 right-6 bg-white border border-gray-200 rounded-xl p-5 z-50 w-80 shadow-xs">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-7 h-7 bg-blue-50 text-[#1A6BCC] border border-blue-100/50 rounded-lg flex items-center justify-center">
+              <span className="text-sm">📱</span>
+            </div>
+            <h4 className="font-bold text-[#1A1E26] text-xs tracking-wider uppercase">
+              Patient Experience
+            </h4>
+          </div>
 
-    <ul className="text-xs text-slate-600 space-y-4 font-medium">
-      <li className="flex gap-3 items-start">
-        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
-          1
-        </span>
-        <span>
-          <strong className="text-slate-900">Live Token Sync:</strong> When the Doctor calls the next patient, watch the token progress bar fill up instantly.
-        </span>
-      </li>
-      <li className="flex gap-3 items-start">
-        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
-          2
-        </span>
-        <span>
-          <strong className="text-slate-900">Dynamic Wait Time:</strong> See the estimated wait time recalculate automatically as the queue moves.
-        </span>
-      </li>
-      <li className="flex gap-3 items-start">
-        <span className="bg-slate-100 text-slate-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
-          3
-        </span>
-        <span>
-          <strong className="text-slate-900">All-in-One Hub:</strong> Patients can view appointment details, history, and update their profile strength.
-        </span>
-      </li>
-    </ul>
-  </div>
-)}
+          <p className="text-xs text-gray-500 mb-4 leading-relaxed font-medium">
+            This is the receiving end of the WebSockets connection. Watch how this screen reacts:
+          </p>
+
+          <ul className="text-xs text-gray-600 space-y-3 font-medium">
+            <li className="flex gap-2.5 items-start">
+              <span className="bg-gray-100 text-gray-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+                1
+              </span>
+              <span>
+                <strong className="text-[#1A1E26]">Live Token Sync:</strong> When the Doctor calls the next patient, watch the token progress bar fill up instantly.
+              </span>
+            </li>
+            <li className="flex gap-2.5 items-start">
+              <span className="bg-gray-100 text-gray-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+                2
+              </span>
+              <span>
+                <strong className="text-[#1A1E26]">Dynamic Wait Time:</strong> See the estimated wait time recalculate automatically as the queue moves.
+              </span>
+            </li>
+            <li className="flex gap-2.5 items-start">
+              <span className="bg-gray-100 text-gray-500 w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+                3
+              </span>
+              <span>
+                <strong className="text-[#1A1E26]">All-in-One Hub:</strong> Patients can view appointment details, history, and update their profile strength.
+              </span>
+            </li>
+          </ul>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 pt-16">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-3xl font-black text-[#1A1E26] tracking-tight">
               Patient Dashboard
             </h1>
-            <p className="text-slate-500 font-medium">
+            <p className="text-gray-500 font-medium mt-1">
               Welcome back, {user.fullName?.split(" ")[0]}!
             </p>
           </div>
-          <div className="flex items-center gap-4 bg-white p-2 pr-6 rounded-2xl shadow-sm border border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center overflow-hidden">
+          <div className="flex items-center gap-3.5 bg-white p-2.5 pr-6 rounded-xl border border-gray-200">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center overflow-hidden border border-gray-100">
               <img
                 src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.fullName}`}
                 alt="User"
               />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900">
+              <p className="text-sm font-bold text-[#1A1E26]">
                 {user.fullName}
               </p>
             </div>
@@ -356,8 +368,8 @@ export default function PatientDashboardV2() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 space-y-6">
-            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2 px-2">
-              <Clock size={18} className="text-teal-500" /> Today's Schedule
+            <h3 className="text-sm uppercase font-bold text-gray-400 tracking-wider flex items-center gap-2 px-1">
+              <Clock size={15} className="text-[#1A6BCC]" /> Today's Schedule
             </h3>
 
             {upcomingAppointments.length > 0 ? (
@@ -365,54 +377,53 @@ export default function PatientDashboardV2() {
                 {upcomingAppointments.map((upcoming) => (
                   <motion.div
                     key={upcoming._id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden"
+                    className="bg-white rounded-xl p-6 border border-gray-200 shadow-none relative"
                   >
                     <div className="absolute top-6 right-6">
-                      <div className="bg-teal-50 text-teal-700 px-4 py-2 rounded-xl font-bold text-xs flex items-center gap-2">
-                        <span className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />{" "}
+                      <div className="bg-blue-50 text-[#1A6BCC] border border-blue-100/80 px-3 py-1.5 rounded-lg font-bold text-xs flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-[#1A6BCC] rounded-full animate-pulse" />{" "}
                         LIVE
                       </div>
                     </div>
 
-                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                    <div className="flex flex-col md:flex-row gap-6 items-start">
                       <div className="flex-1 w-full">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                            <CalendarDays size={20} />
+                        <div className="flex items-center gap-2 mb-3.5">
+                          <div className="w-8 h-8 bg-blue-50 text-[#1A6BCC] rounded-lg flex items-center justify-center">
+                            <CalendarDays size={16} />
                           </div>
-                          <p className="font-bold text-slate-400 text-sm uppercase tracking-widest">
+                          <p className="font-bold text-gray-400 text-[10px] uppercase tracking-wider">
                             Next Appointment
                           </p>
                         </div>
 
-                        <h2 className="text-3xl font-black text-slate-900 mb-2">
+                        <h2 className="text-2xl font-black text-[#1A1E26] mb-1">
                           {upcoming.doctorId.fullName}
                         </h2>
-                        <p className="text-md text-slate-500 font-medium mb-6">
+                        <p className="text-sm text-gray-500 font-medium mb-6">
                           {upcoming.doctorId.specialization} •{" "}
                           {upcoming.doctorId.location}
                         </p>
 
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="bg-slate-50 p-4 rounded-2xl">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
+                          <div className="bg-gray-50 border border-gray-200/50 p-4 rounded-lg">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">
                               Date
                             </p>
-                            <p className="font-bold text-slate-900">
+                            <p className="font-bold text-[#1A1E26] text-sm">
                               {new Date(
                                 upcoming.appointmentDate,
                               ).toLocaleDateString("en-GB")}
                             </p>
                           </div>
-                          {/* 👉 UPDATED: Using dynamic calculateWaitTime */}
-                          <div className="bg-slate-50 p-4 rounded-2xl">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
+                          <div className="bg-gray-50 border border-gray-200/50 p-4 rounded-lg">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider">
                               Live Wait Time
                             </p>
                             <p
-                              className={`font-bold ${upcoming.tokenNumber === currentToken ? "text-rose-600 animate-pulse" : "text-teal-600"}`}
+                              className={`font-bold text-sm ${upcoming.tokenNumber === currentToken ? "text-red-500 animate-pulse" : "text-[#1A6BCC]"}`}
                             >
                               {calculateWaitTime(
                                 upcoming.tokenNumber,
@@ -424,30 +435,30 @@ export default function PatientDashboardV2() {
                       </div>
 
                       <div className="w-full md:w-64 flex flex-col gap-4">
-                        <div className="bg-slate-900 rounded-3xl p-6 text-white">
-                          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mb-4">
+                        <div className="bg-[#1A1E26] rounded-xl p-5 text-white">
+                          <p className="text-gray-400 font-bold text-[10px] uppercase tracking-wider mb-4">
                             Token Progress
                           </p>
                           <div className="flex items-baseline gap-2 mb-1">
-                            <span className="text-5xl font-black">
+                            <span className="text-4xl font-black text-[#1A6BCC]">
                               {upcoming.tokenNumber}
                             </span>
-                            <span className="text-slate-500 font-bold">
+                            <span className="text-gray-400 text-xs font-semibold">
                               Your Token
                             </span>
                           </div>
-                          <div className="mt-8 pt-6 border-t border-slate-800">
+                          <div className="mt-6 pt-5 border-t border-slate-700/60">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-xs text-slate-400">
+                              <span className="text-xs text-gray-400">
                                 Current:
                               </span>
-                              <span className="text-sm font-black text-teal-400">
+                              <span className="text-sm font-black text-[#1A6BCC]">
                                 #{currentToken}
                               </span>
                             </div>
                             <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-teal-500 transition-all duration-500"
+                                className="h-full bg-[#1A6BCC] transition-all duration-500"
                                 style={{
                                   width: `${Math.min((currentToken / upcoming.tokenNumber) * 100, 100)}%`,
                                 }}
@@ -458,9 +469,9 @@ export default function PatientDashboardV2() {
 
                         <button
                           onClick={() => handleCancelAppointment(upcoming._id)}
-                          className="w-full bg-rose-50 text-rose-600 px-6 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-rose-100 transition-all border border-rose-100"
+                          className="w-full bg-red-50 text-red-600 border border-red-100 hover:bg-red-100/50 rounded-lg py-3 font-semibold text-xs flex items-center justify-center gap-2 transition-all"
                         >
-                          <Trash2 size={16} /> CANCEL APPOINTMENT
+                          <Trash2 size={14} /> CANCEL APPOINTMENT
                         </button>
                       </div>
                     </div>
@@ -468,48 +479,48 @@ export default function PatientDashboardV2() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200">
-                <Calendar size={48} className="mx-auto text-slate-200 mb-4" />
-                <h3 className="text-xl font-bold text-slate-900">
+              <div className="bg-white rounded-xl p-10 text-center border border-gray-200">
+                <Calendar size={40} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-bold text-[#1A1E26] mb-1">
                   No Appointments Today
                 </h3>
-                <p className="text-slate-400 mb-6">
+                <p className="text-gray-400 text-sm">
                   You're all clear! Stay healthy.
                 </p>
               </div>
             )}
 
-            <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between mb-6 px-2">
-                <h3 className="text-xl font-black text-slate-900">
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-none">
+              <div className="flex items-center justify-between mb-6 px-1">
+                <h3 className="text-lg font-bold text-[#1A1E26]">
                   Medical History
                 </h3>
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                   Past & Cancelled
                 </span>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {historyAppointments.length > 0 ? (
                   historyAppointments.map((app) => (
                     <div
                       key={app._id}
-                      className="flex items-center justify-between p-4 rounded-2xl border border-slate-50 hover:bg-slate-50/80 transition-all"
+                      className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-[#F4F5F7]/40 transition-all"
                     >
                       <div className="flex items-center gap-4">
                         <div
-                          className={`w-12 h-12 rounded-xl flex items-center justify-center ${app.status === "cancelled" ? "bg-rose-50 text-rose-400" : "bg-slate-100 text-slate-400"}`}
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${app.status === "cancelled" ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-500"}`}
                         >
                           {app.status === "cancelled" ? (
-                            <X size={24} />
+                            <X size={18} />
                           ) : (
-                            <CheckCircle2 size={24} />
+                            <CheckCircle2 size={18} />
                           )}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900">
+                          <p className="font-bold text-sm text-[#1A1E26]">
                             {app.doctorId.fullName}
                           </p>
-                          <p className="text-xs font-medium text-slate-500">
+                          <p className="text-xs font-medium text-gray-500 mt-0.5">
                             {app.doctorId.specialization} •{" "}
                             {new Date(app.appointmentDate).toDateString()}
                           </p>
@@ -517,10 +528,10 @@ export default function PatientDashboardV2() {
                       </div>
                       <div className="flex items-center gap-3">
                         <span
-                          className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-tight ${
+                          className={`text-[9px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wide border ${
                             app.status === "cancelled"
-                              ? "bg-rose-100 text-rose-600"
-                              : "bg-teal-50 text-teal-600"
+                              ? "bg-red-50 text-red-600 border-red-100"
+                              : "bg-emerald-50 text-emerald-600 border-emerald-100"
                           }`}
                         >
                           {app.status}
@@ -529,7 +540,7 @@ export default function PatientDashboardV2() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-slate-400 text-sm py-8 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-100">
+                  <p className="text-gray-400 text-sm py-8 text-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
                     No medical history records found.
                   </p>
                 )}
@@ -538,67 +549,67 @@ export default function PatientDashboardV2() {
           </div>
 
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm text-center">
-              <h3 className="text-lg font-black text-slate-900 mb-6">
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-none text-center">
+              <h3 className="text-base font-bold text-[#1A1E26] mb-6">
                 Profile Strength
               </h3>
-              <div className="relative w-40 h-40 mx-auto mb-6">
+              <div className="relative w-36 h-36 mx-auto mb-6">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle
-                    cx="80"
-                    cy="80"
-                    r="70"
+                    cx="72"
+                    cy="72"
+                    r="62"
                     stroke="currentColor"
-                    strokeWidth="12"
+                    strokeWidth="10"
                     fill="transparent"
-                    className="text-slate-100"
+                    className="text-gray-100"
                   />
                   <motion.circle
-                    initial={{ strokeDasharray: "0 440" }}
+                    initial={{ strokeDasharray: "0 390" }}
                     animate={{
-                      strokeDasharray: `${(completeness / 100) * 440} 440`,
+                      strokeDasharray: `${(completeness / 100) * 390} 390`,
                     }}
-                    transition={{ duration: 1.5 }}
-                    cx="80"
-                    cy="80"
-                    r="70"
+                    transition={{ duration: 1.2 }}
+                    cx="72"
+                    cy="72"
+                    r="62"
                     stroke="currentColor"
-                    strokeWidth="12"
+                    strokeWidth="10"
                     fill="transparent"
                     strokeLinecap="round"
-                    className="text-teal-500"
+                    className="text-[#1A6BCC]"
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-black text-slate-900">
+                  <span className="text-2xl font-black text-[#1A1E26]">
                     {Math.round(completeness)}%
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setIsUpdateModalOpen(true)}
-                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200"
+                className="w-full py-3 bg-[#1A6BCC] hover:bg-[#155baa] text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-colors"
               >
-                <Edit3 size={18} /> Update Info
+                <Edit3 size={16} /> Update Info
               </button>
             </div>
 
-            <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl">
-              <div className="flex items-center justify-between mb-6">
-                <p className="font-bold">Contact Info</p>
+            <div className="bg-white rounded-xl p-6 border border-gray-200 text-[#1A1E26] shadow-none">
+              <div className="flex items-center justify-between mb-5">
+                <p className="font-bold text-sm uppercase tracking-wider text-gray-400">Contact Info</p>
               </div>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Phone size={14} className="text-slate-400" />
-                  <p className="text-sm">{user.mobile || "Not Set"}</p>
+                  <Phone size={14} className="text-[#1A6BCC]" />
+                  <p className="text-sm font-medium text-gray-700">{user.mobile || "Not Set"}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail size={14} className="text-slate-400" />
-                  <p className="text-sm truncate">{user.email || "No Email"}</p>
+                  <Mail size={14} className="text-[#1A6BCC]" />
+                  <p className="text-sm font-medium text-gray-700 truncate">{user.email || "No Email"}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <MapPin size={14} className="text-slate-400" />
-                  <p className="text-sm">
+                  <MapPin size={14} className="text-[#1A6BCC]" />
+                  <p className="text-sm font-medium text-gray-700">
                     {user.location || "No Location Set"}
                   </p>
                 </div>
@@ -616,41 +627,41 @@ export default function PatientDashboardV2() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsUpdateModalOpen(false)}
-              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#1A1E26]/40 backdrop-blur-xs"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="bg-white w-full max-w-2xl rounded-4xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="bg-white w-full max-w-2xl rounded-xl border border-gray-200 relative overflow-hidden flex flex-col max-h-[90vh] shadow-none"
             >
-              <div className="p-8 pb-4 flex items-center justify-between border-b border-slate-50">
+              <div className="p-6 pb-4 flex items-center justify-between border-b border-gray-100">
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900">
+                  <h2 className="text-xl font-bold text-[#1A1E26]">
                     Update Profile
                   </h2>
                 </div>
                 <button
                   onClick={() => setIsUpdateModalOpen(false)}
-                  className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
+                  className="w-8 h-8 bg-gray-50 text-gray-400 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors"
                 >
-                  <X size={20} />
+                  <X size={16} />
                 </button>
               </div>
 
               <form
                 onSubmit={handleUpdateProfile}
-                className="flex-1 overflow-y-auto p-8 pt-6"
+                className="flex-1 overflow-y-auto p-6 pt-5"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                       Full Name
                     </label>
                     <div className="relative">
                       <User
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={15}
                       />
                       <input
                         type="text"
@@ -658,20 +669,20 @@ export default function PatientDashboardV2() {
                         onChange={(e) =>
                           setFormData({ ...formData, fullName: e.target.value })
                         }
-                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-11 pr-4 text-slate-900 font-bold focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-11 pr-4 text-[#1A1E26] font-medium outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all"
                         required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                       Phone Number
                     </label>
                     <div className="relative">
                       <Phone
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={15}
                       />
                       <input
                         type="tel"
@@ -679,19 +690,19 @@ export default function PatientDashboardV2() {
                         onChange={(e) =>
                           setFormData({ ...formData, mobile: e.target.value })
                         }
-                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-11 pr-4 text-slate-900 font-bold focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-11 pr-4 text-[#1A1E26] font-medium outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                       Email Address
                     </label>
                     <div className="relative">
                       <Mail
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={15}
                       />
                       <input
                         type="email"
@@ -699,19 +710,19 @@ export default function PatientDashboardV2() {
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
                         }
-                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-11 pr-4 text-slate-900 font-bold focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-11 pr-4 text-[#1A1E26] font-medium outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                       Date of Birth
                     </label>
                     <div className="relative">
                       <Calendar
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={15}
                       />
                       <input
                         type="date"
@@ -719,13 +730,13 @@ export default function PatientDashboardV2() {
                         onChange={(e) =>
                           setFormData({ ...formData, dob: e.target.value })
                         }
-                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-11 pr-4 text-slate-900 font-bold focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-11 pr-4 text-[#1A1E26] font-medium outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                       Gender
                     </label>
                     <select
@@ -733,7 +744,7 @@ export default function PatientDashboardV2() {
                       onChange={(e) =>
                         setFormData({ ...formData, gender: e.target.value })
                       }
-                      className="w-full bg-slate-50 border-none rounded-2xl py-3.5 px-4 text-slate-900 font-bold focus:ring-2 focus:ring-teal-500 outline-none transition-all appearance-none"
+                      className="w-full bg-white border border-gray-200 rounded-lg py-3 px-4 text-[#1A1E26] font-medium outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all appearance-none"
                     >
                       <option value="">Select Gender</option>
                       <option value="Male">Male</option>
@@ -743,13 +754,13 @@ export default function PatientDashboardV2() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-400 uppercase ml-1">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 ml-0.5 mb-1.5 block tracking-wider">
                       Location
                     </label>
                     <div className="relative">
                       <MapPin
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                        size={16}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        size={15}
                       />
                       <input
                         type="text"
@@ -757,28 +768,28 @@ export default function PatientDashboardV2() {
                         onChange={(e) =>
                           setFormData({ ...formData, location: e.target.value })
                         }
-                        className="w-full bg-slate-50 border-none rounded-2xl py-3.5 pl-11 pr-4 text-slate-900 font-bold focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                        className="w-full bg-white border border-gray-200 rounded-lg py-3 pl-11 pr-4 text-[#1A1E26] font-medium outline-none focus:border-[#1A6BCC] focus:ring-1 focus:ring-[#1A6BCC] transition-all"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-10 flex items-center gap-4">
+                <div className="mt-8 flex items-center gap-4">
                   <button
                     type="button"
                     onClick={() => setIsUpdateModalOpen(false)}
-                    className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold hover:bg-slate-200 transition-colors"
+                    className="flex-1 py-3 bg-white border border-gray-200 text-[#1A1E26] rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isUpdating}
-                    className="flex-2 py-4 bg-teal-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-teal-700 transition-all disabled:opacity-50"
+                    className="flex-1 py-3 bg-[#1A6BCC] text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-[#155baa] transition-all disabled:opacity-50"
                   >
                     {isUpdating ? (
                       <>
-                        <Loader2 className="animate-spin" size={20} />{" "}
+                        <Loader2 className="animate-spin" size={16} />{" "}
                         Updating...
                       </>
                     ) : (
