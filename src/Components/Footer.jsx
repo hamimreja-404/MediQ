@@ -19,13 +19,9 @@ const LINKS = {
   ],
   Company: [
     { to: "/about",   label: "About Us" },
-    { to: "/careers", label: "Careers"  },
-    { to: "/contact", label: "Contact"  },
+
   ],
-  Legal: [
-    { to: "/privacy", label: "Privacy Policy"   },
-    { to: "/terms",   label: "Terms of Service" },
-  ],
+
 };
 
 export default function Footer() {
